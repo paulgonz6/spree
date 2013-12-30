@@ -7,7 +7,10 @@ module Spree
 
     let!(:product) { create(:product) }
     let!(:inactive_product) { create(:product, :available_on => Time.now.tomorrow, :name => "inactive") }
-    let(:attributes) { [:id, :name, :description, :price, :display_price, :available_on, :permalink, :meta_description, :meta_keywords, :shipping_category_id, :taxon_ids] }
+    let(:base_attributes) { [:id, :name, :description, :price, :display_price, :available_on, :permalink, :meta_description, :meta_keywords, :shipping_category_id, :taxon_ids] }
+    let(:show_attributes) { base_attributes.dup.push(:has_variants) }
+    let(:new_attributes) { base_attributes }
+    
 
     before do
       stub_authentication!
@@ -16,7 +19,7 @@ module Spree
     context "as a normal user" do
       it "retrieves a list of products" do
         api_get :index
-        json_response["products"].first.should have_attributes(attributes)
+        json_response["products"].first.should have_attributes(show_attributes)
         json_response["total_count"].should == 1
         json_response["current_page"].should == 1
         json_response["pages"].should == 1
@@ -25,7 +28,7 @@ module Spree
 
       it "retrieves a list of products by id" do
         api_get :index, :ids => [product.id]
-        json_response["products"].first.should have_attributes(attributes)
+        json_response["products"].first.should have_attributes(show_attributes)
         json_response["total_count"].should == 1
         json_response["current_page"].should == 1
         json_response["pages"].should == 1
@@ -35,8 +38,8 @@ module Spree
       it "retrieves a list of products by ids string" do
         second_product = create(:product)
         api_get :index, :ids => [product.id, second_product.id].join(",")
-        json_response["products"].first.should have_attributes(attributes)
-        json_response["products"][1].should have_attributes(attributes)
+        json_response["products"].first.should have_attributes(show_attributes)
+        json_response["products"][1].should have_attributes(show_attributes)
         json_response["total_count"].should == 2
         json_response["current_page"].should == 1
         json_response["pages"].should == 1
@@ -57,7 +60,7 @@ module Spree
         it "can select the next page of products" do
           second_product = create(:product)
           api_get :index, :page => 2, :per_page => 1
-          json_response["products"].first.should have_attributes(attributes)
+          json_response["products"].first.should have_attributes(show_attributes)
           json_response["total_count"].should == 2
           json_response["current_page"].should == 2
           json_response["pages"].should == 2
@@ -84,7 +87,7 @@ module Spree
       it "can search for products" do
         create(:product, :name => "The best product in the world")
         api_get :index, :q => { :name_cont => "best" }
-        json_response["products"].first.should have_attributes(attributes)
+        json_response["products"].first.should have_attributes(show_attributes)
         json_response["count"].should == 1
       end
 
@@ -94,11 +97,12 @@ module Spree
         product.variants.first.images.create!(:attachment => image("thinking-cat.jpg"))
         product.set_property("spree", "rocks")
         api_get :show, :id => product.to_param
-        json_response.should have_attributes(attributes)
+        json_response.should have_attributes(show_attributes)
         json_response['variants'].first.should have_attributes([:name,
                                                               :is_master,
                                                               :price,
-                                                              :images])
+                                                              :images,
+                                                              :in_stock])
 
         json_response['variants'].first['images'].first.should have_attributes([:attachment_file_name,
                                                                                 :attachment_width,
@@ -144,7 +148,7 @@ module Spree
 
       it "can learn how to create a new product" do
         api_get :new
-        json_response["attributes"].should == attributes.map(&:to_s)
+        json_response["attributes"].should == new_attributes.map(&:to_s)
         required_attributes = json_response["required_attributes"]
         required_attributes.should include("name")
         required_attributes.should include("price")
@@ -155,6 +159,9 @@ module Spree
     end
 
     context "as an admin" do
+      let(:taxon_1) { create(:taxon) }
+      let(:taxon_2) { create(:taxon) }
+
       sign_in_as_admin!
 
       it "can see all products" do
@@ -182,53 +189,71 @@ module Spree
         end
       end
 
-      it "can create a new product" do
-        api_post :create, :product => { :name => "The Other Product",
-                                        :price => 19.99,
-                                        :shipping_category_id => create(:shipping_category).id }
-        json_response.should have_attributes(attributes)
-        response.status.should == 201
-      end
-
-      # Regression test for #2140
-      context "with authentication_required set to false" do
-        before do
-          Spree::Api::Config.requires_authentication = false
+      context 'creating a product' do
+        let(:product_data) do
+          { name: "The Other Product",
+            price: 19.99,
+            shipping_category_id: create(:shipping_category).id }
         end
 
-        after do
-          Spree::Api::Config.requires_authentication = true
-        end
-
-        it "can still create a product" do
-          api_post :create, :product => { :name => "The Other Product",
-                                          :price => 19.99,
-                                          :shipping_category_id => create(:shipping_category).id },
-                            :token => "fake"
-          json_response.should have_attributes(attributes)
+        it "can create a new product" do
+          api_post :create, :product => product_data
+          json_response.should have_attributes(new_attributes)
           response.status.should == 201
         end
+
+        it "puts the created product in the given taxon" do
+          product_data[:taxon_ids] = taxon_1.id.to_s
+          api_post :create, :product => product_data
+          expect(json_response["taxon_ids"]).to eq([taxon_1.id,])
+        end
+
+        # Regression test for #2140
+        context "with authentication_required set to false" do
+          before do
+            Spree::Api::Config.requires_authentication = false
+          end
+
+          after do
+            Spree::Api::Config.requires_authentication = true
+          end
+
+          it "can still create a product" do
+            api_post :create, :product => product_data, :token => "fake"
+            json_response.should have_attributes(show_attributes)
+            response.status.should == 201
+          end
+        end
+
+        it "cannot create a new product with invalid attributes" do
+          api_post :create, :product => {}
+          response.status.should == 422
+          json_response["error"].should == "Invalid resource. Please fix errors and try again."
+          errors = json_response["errors"]
+          errors.delete("permalink") # Don't care about this one.
+          errors.keys.should =~ ["name", "price", "shipping_category_id"]
+        end
       end
 
-      it "cannot create a new product with invalid attributes" do
-        api_post :create, :product => {}
-        response.status.should == 422
-        json_response["error"].should == "Invalid resource. Please fix errors and try again."
-        errors = json_response["errors"]
-        errors.delete("permalink") # Don't care about this one.
-        errors.keys.should =~ ["name", "price", "shipping_category_id"]
-      end
+      context 'updating a product' do
+        it "can update a product" do
+          api_put :update, :id => product.to_param, :product => { :name => "New and Improved Product!" }
+          response.status.should == 200
+        end
 
-      it "can update a product" do
-        api_put :update, :id => product.to_param, :product => { :name => "New and Improved Product!" }
-        response.status.should == 200
-      end
+        it "cannot update a product with an invalid attribute" do
+          api_put :update, :id => product.to_param, :product => { :name => "" }
+          response.status.should == 422
+          json_response["error"].should == "Invalid resource. Please fix errors and try again."
+          json_response["errors"]["name"].should == ["can't be blank"]
+        end
 
-      it "cannot update a product with an invalid attribute" do
-        api_put :update, :id => product.to_param, :product => { :name => "" }
-        response.status.should == 422
-        json_response["error"].should == "Invalid resource. Please fix errors and try again."
-        json_response["errors"]["name"].should == ["can't be blank"]
+        # Regression test for #4123
+        it "puts the created product in the given taxon" do
+          api_put :update, :id => product.to_param, :product => {:taxon_ids => taxon_1.id.to_s}
+          expect(json_response["taxon_ids"]).to eq([taxon_1.id,])
+        end
+
       end
 
       it "can delete a product" do
