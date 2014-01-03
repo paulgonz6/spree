@@ -6,3 +6,4 @@ node(:display_tax_total) { |o| o.display_tax_total }
 node(:display_total) { |o| o.display_total.to_s }
 node(:token) { |o| o.token }
 node(:checkout_steps) { |o| o.checkout_steps }
+node(:display_ship_total) { |o| o.display_ship_total }
