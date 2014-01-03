@@ -67,6 +67,12 @@ module Spree
       order && !UNACTIVATABLE_ORDER_STATES.include?(order.state)
     end
 
+    # Introduced from master Spree::Core
+    # https://github.com/spree/spree/blob/master/core/app/models/spree/promotion.rb#L38-L40
+    def self.order_activatable?(order)
+      order && !UNACTIVATABLE_ORDER_STATES.include?(order.state)
+    end
+
     # Products assigned to all product rules
     def products
       @products ||= self.rules.to_a.inject([]) do |products, rule|
