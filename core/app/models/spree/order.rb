@@ -464,6 +464,10 @@ module Spree
       @coupon_code = code.strip.downcase rescue nil
     end
 
+    def can_add_coupon?
+      Spree::Promotion.order_activatable?(self)
+    end
+
     # Tells us if there if the specified promotion is already associated with the order
     # regardless of whether or not its currently eligible. Useful because generally
     # you would only want a promotion action to apply to order no more than once.
