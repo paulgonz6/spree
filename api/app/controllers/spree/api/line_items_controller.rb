@@ -25,8 +25,12 @@ module Spree
 
       def destroy
         @line_item = order.line_items.find(params[:id])
-        @line_item.destroy
-        respond_with(@line_item, status: 204)
+        if @line_item.destroy
+          @order.ensure_updated_shipments
+          respond_with(@line_item, status: 204)
+        else
+          invalid_resource!(@line_item)
+        end
       end
 
       private

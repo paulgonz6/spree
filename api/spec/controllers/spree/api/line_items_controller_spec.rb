@@ -83,6 +83,12 @@ module Spree
           api_put :update, :id => line_item.id, :line_item => { :quantity => 1000 }
           expect(order.reload.shipments).to be_empty
         end
+
+        it "clear out shipments on destroy" do
+          expect(order.reload.shipments).not_to be_empty
+          api_delete :destroy, :id => line_item.id
+          expect(order.reload.shipments).to be_empty
+        end
       end
     end
 
