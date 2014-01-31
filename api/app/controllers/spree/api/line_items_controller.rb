@@ -6,7 +6,7 @@ module Spree
         variant = Spree::Variant.find(params[:line_item][:variant_id])
         @line_item = order.contents.add(variant, params[:line_item][:quantity])
         if @line_item.save
-          @order.ensure_updated_shipments
+          update_order
           respond_with(@line_item, status: 201, default_template: :show)
         else
           invalid_resource!(@line_item)
@@ -16,7 +16,7 @@ module Spree
       def update
         @line_item = order.line_items.find(params[:id])
         if @line_item.update_attributes(line_item_params)
-          @order.ensure_updated_shipments
+          update_order
           respond_with(@line_item, default_template: :show)
         else
           invalid_resource!(@line_item)
@@ -26,7 +26,7 @@ module Spree
       def destroy
         @line_item = order.line_items.find(params[:id])
         if @line_item.destroy
-          @order.ensure_updated_shipments
+          update_order
           respond_with(@line_item, status: 204)
         else
           invalid_resource!(@line_item)
@@ -34,6 +34,12 @@ module Spree
       end
 
       private
+
+        def update_order
+          @order.ensure_updated_shipments
+          @order.update_totals
+          @order.save
+        end
 
         def order
           @order ||= Spree::Order.find_by!(number: params[:order_id])
