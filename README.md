@@ -1,3 +1,21 @@
+Bonobos-Specific Documentation
+-------
+This fork of spree is currently tracking spree/2-2-stable. Ideally any code on this branch is only here temporarily as it makes its way into spree upstream or into internal applications. In order to easily maintain knowledge of what code has been written on top of spree, it is best to follow this process:
+
+New Feature Development:
+
+* Branch off of master
+* Submit pull request to Spree
+* If the code is accepted, either cherry-pick it over to our fork, or update against the latest of that version of spree
+* If the code is rejected, try to bring it into spree-backend instead of our fork of spree
+
+Updating Against Upstream:
+
+* Pull 2-2-dev
+* Rebase against spree/2-2-stable, resolve any conflicts
+* Run tests
+* Make sure no new code has been written on 2-2-dev, then **force push** onto 2-2-dev so that Bonobos commits are all at the top
+
 SUMMARY
 -------
 
