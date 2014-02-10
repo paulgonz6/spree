@@ -4,13 +4,13 @@ module Spree
       before_filter :find_order
 
       def show
-        authorize! :read, @order, order_token
+        authorize! :read, @order, params[:order_token]
         find_address
         respond_with(@address)
       end
 
       def update
-        authorize! :update, @order, order_token
+        authorize! :update, @order, params[:order_token]
         find_address
 
         if @address.update_attributes(address_params)
@@ -37,10 +37,6 @@ module Spree
           else
             raise CanCan::AccessDenied
           end
-        end
-
-        def order_token
-          request.headers["X-Spree-Order-Token"] || params[:order_token]
         end
     end
   end

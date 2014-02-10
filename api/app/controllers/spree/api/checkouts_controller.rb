@@ -1,7 +1,6 @@
 module Spree
   module Api
     class CheckoutsController < Spree::Api::BaseController
-      before_filter :load_order,     only: [:show, :update, :next, :advance]
       before_filter :associate_user, only: :update
 
       include Spree::Core::ControllerHelpers::Auth
@@ -16,7 +15,8 @@ module Spree
       end
 
       def next
-        authorize! :update, @order, order_token
+        load_order(true)
+        authorize! :update, @order, params[:order_token]
         @order.next!
         respond_with(@order, default_template: 'spree/api/orders/show', status: 200)
       rescue StateMachine::InvalidTransition
@@ -24,17 +24,20 @@ module Spree
       end
 
       def advance
-        authorize! :update, @order, order_token
+        load_order(true)
+        authorize! :update, @order, params[:order_token]
         while @order.next; end
         respond_with(@order, default_template: 'spree/api/orders/show', status: 200)
       end
 
       def show
+        load_order
         respond_with(@order, default_template: 'spree/api/orders/show', status: 200)
       end
 
       def update
-        authorize! :update, @order, order_token
+        load_order(true)
+        authorize! :update, @order, params[:order_token]
         order_params = object_params
         line_items = order_params.delete('line_items_attributes')
         if @order.update_attributes(order_params)
@@ -84,8 +87,8 @@ module Spree
           false
         end
 
-        def load_order
-          @order = Spree::Order.find_by!(number: params[:id])
+        def load_order(lock = false)
+          @order = Spree::Order.lock(lock).find_by!(number: params[:id])
           raise_insufficient_quantity and return if @order.insufficient_stock_lines.present?
           @order.state = params[:state] if params[:state]
           state_callback(:before)
@@ -130,10 +133,6 @@ module Spree
             end
           end
           false
-        end
-
-        def order_token
-          request.headers["X-Spree-Order-Token"] || params[:order_token]
         end
     end
   end

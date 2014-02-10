@@ -30,3 +30,5 @@ group :test do
   gem 'webmock', '1.8.11'
   gem 'poltergeist', '1.4.1'
 end
+
+gemspec

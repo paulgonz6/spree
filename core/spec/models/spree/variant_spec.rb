@@ -301,13 +301,18 @@ describe Spree::Variant do
           variant.in_stock?.should be_false
         end
       end
-    end
 
-    describe "#can_stock?" do
-      it "calls out to quantifier" do
-        Spree::Stock::Quantifier.should_receive(:new).and_return(quantifier = stub)
-        quantifier.should_receive(:can_supply?).with(10)
-        variant.can_stock?(10)
+      context 'when providing quantity param' do
+        before do
+          variant.stock_items.first.update_attribute(:count_on_hand, 10)
+        end
+
+        it 'returns correctt value' do
+          variant.in_stock?.should be_true
+          variant.in_stock?(2).should be_true
+          variant.in_stock?(10).should be_true
+          variant.in_stock?(11).should be_false
+        end
       end
     end
 
@@ -366,14 +371,6 @@ describe Spree::Variant do
       Spree::Config[:track_inventory_levels] = true
 
       build(:variant).should_track_inventory?.should eq(true)
-    end
-  end
-
-  describe "deleted_at scope" do
-    before { variant.destroy && variant.reload }
-    it "should have a price if deleted" do
-      variant.price = 10
-      expect(variant.price).to eq(10)
     end
   end
 end

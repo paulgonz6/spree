@@ -110,12 +110,6 @@ module Spree
       response.status.should == 200
     end
 
-    it "can view an order if the token is passed in header" do
-      request.headers["X-Spree-Order-Token"] = order.token
-      api_get :show, :id => order.to_param
-      response.status.should == 200
-    end
-
     it "cannot cancel an order that doesn't belong to them" do
       order.update_attribute(:completed_at, Time.now)
       order.update_attribute(:shipment_state, "ready")
@@ -467,13 +461,10 @@ module Spree
       end
 
       it "responds with orders updated_at with miliseconds precision" do
-        if ActiveRecord::Base.connection.adapter_name == "Mysql2"
-          pending "MySQL does not support millisecond timestamps."
-        end
-
         api_get :index
         milisecond = order.updated_at.strftime("%L")
         updated_at = json_response["orders"].first["updated_at"]
+
         expect(updated_at.split("T").last).to have_content(milisecond)
       end
 
@@ -546,64 +537,6 @@ module Spree
         specify do
           api_put :cancel, :id => order.to_param
           json_response["state"].should == "canceled"
-        end
-      end
-    end
-
-    describe 'apply_promo_code' do
-      # Borrowed from:
-      # https://github.com/spree/spree/blob/master/api/spec/controllers/spree/api/promotion_application_spec.rb
-
-      let(:order) { create(:order, state: 'payment', user: current_api_user) }
-
-      subject do
-        api_put :apply_coupon_code, id: order.to_param, coupon_code: coupon_code, :order_token => order.token
-      end
-
-      context 'when valid promo code' do
-        let(:coupon_code) { 'some_code' }
-
-        # Create a promotion for testing.
-        # https://github.com/spree/spree/blob/2-1-stable/core/spec/lib/spree/promo/coupon_applicator_spec.rb
-        before(:each) do
-          flat_percent_calc = Spree::Calculator::FlatPercentItemTotal.create(:preferred_flat_percent => "10")
-          promo = Spree::Promotion.create(:name => "Discount", :event_name => "spree.checkout.coupon_code_added", :code => coupon_code, :usage_limit => "10", :starts_at => DateTime.yesterday, :expires_at => DateTime.tomorrow)
-          promo_rule = Spree::Promotion::Rules::ItemTotal.create(:preferred_operator => "gt", :preferred_amount => "1")
-          promo_rule.update_attribute(:activator_id, promo.id)
-          promo_action = Spree::Promotion::Actions::CreateAdjustment.create(:calculator_type => "Spree::Calculator::FlatPercentItemTotal")
-          promo_action.update_attribute(:activator_id, promo.id)
-          flat_percent_calc.update_attribute(:calculable_id, promo.id)
-          Spree::Order.any_instance.stub(:payment_required? => false)
-          Spree::Adjustment.any_instance.stub(:eligible => true)
-        end
-
-        it 'should should be_ok ' do
-          subject
-          response.should be_ok 
-        end
-
-        it 'should have success JSON' do
-          subject
-          result = JSON.parse(response.body)
-          result['successful'].should be_true
-          result['success'].should == "The coupon code was successfully applied to your order."
-          result['error'].should be_nil
-        end
-      end
-
-      context 'when invalid promo code' do
-        let(:coupon_code) { 'xxxxx' }
-        it 'should should be_ok ' do
-          subject
-          response.code.to_i.should == 422
-        end
-
-        it 'should have error JSON' do
-          subject
-          result = JSON.parse(response.body)
-          result['successful'].should be_false
-          result['error'].should == "The coupon code you entered doesn't exist. Please try again."
-          result['success'].should be_nil
         end
       end
     end

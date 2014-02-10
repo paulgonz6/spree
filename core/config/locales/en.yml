@@ -318,18 +318,13 @@ en:
           delivery_success: Test Mail sent successfully
           error: ! 'Test Mail error: %{e}'
       tab:
-        configuration: Configuration
-        option_types: Option Types
-        orders: Orders
-        overview: Overview
-        products: Products
-        promotions: Promotions
-        properties: Properties
-        prototypes: Prototypes
-        reports: Reports
-        taxonomies: Taxonomies
-        taxons: Taxons
-        users: Users
+        overview: "Overview"
+        orders: "Orders"
+        products: "Products"
+        reports: "Reports"
+        configuration: "Configuration"
+        promotions: "Promotions"
+        users: "Users"
     administration: Administration
     agree_to_privacy_policy: Agree to Privacy Policy
     agree_to_terms_of_service: Agree to Terms of Service
@@ -361,6 +356,7 @@ en:
     attachment_styles: Paperclip Styles
     attachment_url: Attachments URL
     authorization_failure: Authorization Failure
+    auto_capture: Auto Capture
     available_on: Available On
     avs_response: AVS Response
     back: Back
@@ -605,7 +601,6 @@ en:
     image_settings_updated: Image Settings successfully updated.
     image_settings_warning: You will need to regenerate thumbnails if you update the paperclip styles. Use rake paperclip:refresh:thumbnails CLASS=Spree::Image to do this.
     images: Images
-    inactive: Inactive
     included_in_price: Included in Price
     included_price_validation: cannot be selected unless you have set a Default Tax Zone
     instructions_to_reset_password: Please enter your email on the form below
@@ -775,7 +770,7 @@ en:
         thanks: Thank you for your business.
         total: ! 'Order Total: %{total}'
     order_not_found: We couldn't find your order. Please try that action again.
-    order_number: Order %{number}
+    order_number: Order
     order_populator:
       out_of_stock: ! '%{item} is out of stock.'
       selected_quantity_not_available: ! 'Selected quantity of %{item} is not available.'
@@ -932,7 +927,6 @@ en:
     review: Review
     risk: Risk
     risk_analysis: Risk Analysis
-    risky: Risky
     rma_credit: RMA Credit
     rma_number: RMA Number
     rma_value: RMA Value
@@ -947,7 +941,6 @@ en:
     sales_total_description: Sales Total For All Orders
     sales_totals: Sales Totals
     save_and_continue: Save and Continue
-    save_my_address: Save my address
     say_no: 'No'
     say_yes: 'Yes'
     scope: Scope
@@ -1101,6 +1094,7 @@ en:
     update: Update
     updating: Updating
     usage_limit: Usage Limit
+    use_app_default: Use App Default
     use_billing_address: Use Billing Address
     use_new_cc: Use a new card
     use_s3: Use Amazon S3 For Images

@@ -8,7 +8,7 @@ module Spree
     has_many :shipments
     has_many :shipping_method_categories
     has_many :shipping_categories, through: :shipping_method_categories
-    has_many :shipping_rates, inverse_of: :shipping_method
+    has_many :shipping_rates
 
     has_and_belongs_to_many :zones, :join_table => 'spree_shipping_methods_zones',
                                     :class_name => 'Spree::Zone',
@@ -30,8 +30,7 @@ module Spree
     end
 
     def build_tracking_url(tracking)
-      return if tracking.blank? || tracking_url.blank?
-      tracking_url.gsub(/:tracking/, ERB::Util.url_encode(tracking)) # :url_encode exists in 1.8.7 through 2.1.0
+      tracking_url.gsub(/:tracking/, tracking) unless tracking.blank? || tracking_url.blank?
     end
 
     def self.calculators

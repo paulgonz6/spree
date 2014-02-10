@@ -59,14 +59,6 @@ module Spree
         order.reload.state.should eq "address"
       end
 
-      it "should transition a recently created order from cart to address with order token in header" do
-        order.state.should eq "cart"
-        order.email.should_not be_nil
-        request.headers["X-Spree-Order-Token"] = order.token
-        api_put :update, :id => order.to_param
-        order.reload.state.should eq "address"
-      end
-
       it "can take line_items_attributes as a parameter" do
         line_item = order.line_items.first
         api_put :update, :id => order.to_param, :order_token => order.token,

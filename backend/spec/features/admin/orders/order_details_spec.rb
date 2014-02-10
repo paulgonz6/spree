@@ -168,43 +168,10 @@ describe "Order Details", js: true do
           end
         end
       end
-      
-      context "with special_instructions present" do
-        let(:order) { create(:order, :state => 'complete', :completed_at => "2011-02-01 12:36:15", :number => "R100", :special_instructions => "Very special instructions here") }
-        it "will show the special_instructions" do
-          visit spree.edit_admin_order_path(order)
-          expect(page).to have_content("Very special instructions here")
-        end
-      end
-
-      context "variant doesn't track inventory" do
-        before do
-          tote.master.update_column :track_inventory, false
-          # make sure there's no stock level for any item
-          tote.master.stock_items.update_all count_on_hand: 0, backorderable: false
-        end
-
-        it "adds variant to order just fine"  do
-          select2_search tote.name, :from => Spree.t(:name_or_sku)
-
-          within("table.stock-levels") do
-            fill_in "stock_item_quantity", :with => 1
-            click_icon :plus
-          end
-
-          within(".stock-contents") do
-            page.should have_content(tote.name)
-          end
-        end
-      end
     end
   end
 
   context 'with only read permissions' do
-    before do 
-      Spree::Admin::BaseController.any_instance.stub(:spree_current_user).and_return(nil)
-    end
-
     custom_authorization! do |user|
       can [:admin, :index, :read, :edit], Spree::Order
     end
@@ -239,7 +206,6 @@ describe "Order Details", js: true do
     end
 
     it 'should not display order tabs or edit buttons without ability' do
-      Spree::Admin::BaseController.any_instance.stub(:spree_current_user).and_return(nil)
       visit spree.edit_admin_order_path(order)
       # Order Form
       page.should_not have_css('.edit-item')

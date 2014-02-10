@@ -34,7 +34,7 @@ module Spree
       v.options_text
     end
 
-    def meta_data
+    def meta_data_tags
       object = instance_variable_get('@'+controller_name.singularize)
       meta = {}
 
@@ -51,11 +51,8 @@ module Spree
         keywords: Spree::Config[:default_meta_keywords],
         description: Spree::Config[:default_meta_description]
       })
-      meta
-    end
 
-    def meta_data_tags
-      meta_data.map do |name, content|
+      meta.map do |name, content|
         tag('meta', name: name, content: content)
       end.join("\n")
     end

@@ -30,12 +30,6 @@ module Spree
             :line_items_attributes => permitted_line_item_attributes
           ]
         end
-
-        def permitted_product_attributes
-          permitted_attributes.product_attributes + [
-            :product_properties_attributes => permitted_product_properties_attributes
-          ]
-        end
       end
     end
   end

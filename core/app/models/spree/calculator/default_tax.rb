@@ -28,11 +28,7 @@ module Spree
         end
 
         line_items_total = matched_line_items.sum(&:total)
-        if rate.included_in_price
-          deduced_total_by_rate(line_items_total, rate)
-        else
-          round_to_two_places(line_items_total * rate.amount)
-        end
+        round_to_two_places(line_items_total * rate.amount)
       end
 
       def compute_line_item(line_item)

@@ -31,10 +31,6 @@ Spree::Core::Engine.add_routes do
     get '/orders/mine', :to => 'orders#mine', :as => 'my_orders'
 
     resources :orders do
-      member do
-        put :apply_coupon_code
-      end
-
       resources :addresses, :only => [:show, :update]
 
       resources :return_authorizations do

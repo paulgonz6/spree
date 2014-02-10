@@ -1,6 +1,5 @@
 module Spree
   class Price < ActiveRecord::Base
-    acts_as_paranoid
     belongs_to :variant, class_name: 'Spree::Variant'
 
     validate :check_price
@@ -21,11 +20,6 @@ module Spree
 
     def price=(price)
       self[:amount] = parse_price(price)
-    end
-
-    # Remove variant default_scope `deleted_at: nil`
-    def variant
-      Spree::Variant.unscoped { super }
     end
 
     private

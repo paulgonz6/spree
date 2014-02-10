@@ -6,7 +6,7 @@ describe Spree::Promo::CouponApplicator do
   end
 
   describe "#apply" do
-    let(:order) { create(:order_with_line_items, :state => "payment", :coupon_code => "tenoff", :line_items_count => 1) }
+    let(:order) { create(:order, :state => "payment", :coupon_code => "tenoff") }
 
     it "can apply a coupon code to an order" do
       flat_percent_calc = Spree::Calculator::FlatPercentItemTotal.create(:preferred_flat_percent => "10")
@@ -20,11 +20,9 @@ describe Spree::Promo::CouponApplicator do
       Spree::Adjustment.any_instance.stub(:eligible => true)
       order.update_column(:state, "payment")
       order.coupon_code = "tenoff"
-      
-      result = subject.apply
-      expect(result[:coupon_applied?]).to eq(true)
-      expect(result[:success]).to eq("The coupon code was successfully applied to your order.")
-      expect(order.adjustments.eligible.first.label).to eq("Promotion (#{promo.name})")
+
+      subject.apply
+      order.adjustments.first.label.should == "Promotion (#{promo.name})"
     end
   end
 end

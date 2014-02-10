@@ -92,7 +92,7 @@ module Spree
     end
 
     def self.complete
-      where.not(completed_at: nil)
+      where('completed_at IS NOT NULL')
     end
 
     def self.incomplete
@@ -351,7 +351,7 @@ module Spree
     end
 
     def available_payment_methods
-      @available_payment_methods ||= (PaymentMethod.available(:front_end) + PaymentMethod.available(:both)).uniq
+      @available_payment_methods ||= PaymentMethod.available(:front_end)
     end
 
     def pending_payments
@@ -464,6 +464,10 @@ module Spree
       @coupon_code = code.strip.downcase rescue nil
     end
 
+    def can_add_coupon?
+      Spree::Promotion.order_activatable?(self)
+    end
+
     # Tells us if there if the specified promotion is already associated with the order
     # regardless of whether or not its currently eligible. Useful because generally
     # you would only want a promotion action to apply to order no more than once.
@@ -528,9 +532,9 @@ module Spree
 
     def is_risky?
       self.payments.where(%{
-        (avs_response IS NOT NULL and avs_response != '' and avs_response != 'D' and avs_response != 'M') or
+        (avs_response IS NOT NULL and avs_response != 'D') or
         (cvv_response_code IS NOT NULL and cvv_response_code != 'M') or
-        cvv_response_message IS NOT NULL and cvv_response_message != '' or
+        cvv_response_message IS NOT NULL or
         state = 'failed'
       }.squish!).uniq.count > 0
     end
@@ -566,13 +570,12 @@ module Spree
       end
 
       def has_available_payment
-        return unless has_step?("delivery") && delivery?
+        return unless delivery?
         # errors.add(:base, :no_payment_methods_available) if available_payment_methods.empty?
       end
 
       def after_cancel
         shipments.each { |shipment| shipment.cancel! }
-        payments.completed.each { |payment| payment.credit! }
 
         send_cancel_email
         self.update_column(:payment_state, 'credit_owed') unless shipped?

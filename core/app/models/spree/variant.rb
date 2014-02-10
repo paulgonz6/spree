@@ -30,7 +30,7 @@ module Spree
       dependent: :destroy
 
     validate :check_price
-    validates :price, numericality: { greater_than_or_equal_to: 0 }
+    validates :price, numericality: { greater_than_or_equal_to: 0 }, presence: true, if: proc { Spree::Config[:require_master_price] }
 
     validates :cost_price, numericality: { greater_than_or_equal_to: 0, allow_nil: true }
 
@@ -40,7 +40,7 @@ module Spree
     after_create :set_position
 
     # default variant scope only lists non-deleted variants
-    scope :deleted, lambda { where.not(deleted_at: nil) }
+    scope :deleted, lambda { where('deleted_at IS NOT NULL') }
 
     def self.active(currency = nil)
       joins(:prices).where(deleted_at: nil).where('spree_prices.currency' => currency || Spree::Config[:currency]).where('spree_prices.amount IS NOT NULL')
@@ -78,23 +78,6 @@ module Spree
       deleted_at
     end
 
-    # Product may be created with deleted_at already set,
-    # which would make AR's default finder return nil.
-    # This is a stopgap for that little problem.
-    def product
-      Spree::Product.unscoped { super }
-    end
-
-    def default_price
-      Spree::Price.unscoped { super }
-    end
-
-    def options=(options = {})
-      options.each do |option|
-        set_option_value(option[:name], option[:value])
-      end
-    end
-
     def set_option_value(opt_name, opt_value)
       # no option values on master
       return if self.is_master
@@ -113,6 +96,7 @@ module Spree
         # then we have to check to make sure that the product has the option type
         unless self.product.option_types.include? option_type
           self.product.option_types << option_type
+          self.product.save
         end
       end
 
@@ -149,12 +133,14 @@ module Spree
       "#{sku} #{options_text}".strip
     end
 
-    def in_stock?(quantity=1)
-      puts %q{[DEPRECATION] In Spree 2.2, Variant#in_stock? will no longer take a quantity. Use Variant#can_supply? instead.}
-      can_stock?(quantity)
+    # Product may be created with deleted_at already set,
+    # which would make AR's default finder return nil.
+    # This is a stopgap for that little problem.
+    def product
+      Spree::Product.unscoped { super }
     end
 
-    def can_stock?(quantity=1)
+    def in_stock?(quantity=1)
       Spree::Stock::Quantifier.new(self).can_supply?(quantity)
     end
 

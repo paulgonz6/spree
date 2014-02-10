@@ -418,12 +418,12 @@ describe Spree::Product do
   context "classifications and taxons" do
     it "is joined through classifications" do
       reflection = Spree::Product.reflect_on_association(:taxons)
-      expect(reflection.options[:through]).to eq(:classifications)
+      reflection.options[:through] = :classifications
     end
 
     it "will delete all classifications" do
       reflection = Spree::Product.reflect_on_association(:classifications)
-      expect(reflection.options[:dependent]).to eq(:delete_all)
+      reflection.options[:dependent] = :delete_all
     end
   end
 

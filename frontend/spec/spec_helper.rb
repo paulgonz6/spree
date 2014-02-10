@@ -14,13 +14,7 @@ end
 # This file is copied to ~/spec when you run 'ruby script/generate rspec'
 # from the project root directory.
 ENV["RAILS_ENV"] ||= 'test'
-
-begin
-  require File.expand_path("../dummy/config/environment", __FILE__)
-rescue LoadError
-  puts "Could not load dummy application. Please ensure you have run `bundle exec rake test_app`"
-end
-
+require File.expand_path("../dummy/config/environment", __FILE__)
 require 'rspec/rails'
 require 'ffaker'
 

@@ -195,17 +195,13 @@ describe Spree::Promotion do
     let!(:action) do
       calculator = Spree::Calculator::FlatRate.new
       action_params = { :promotion => promotion, :calculator => calculator }
-      action = Spree::Promotion::Actions::CreateAdjustment.create(action_params)
+      action = Spree::Promotion::Actions::CreateAdjustment.create(action_params, :without_protection => true)
       promotion.actions << action
       action
     end
 
     let!(:adjustment) do
-      Spree::Adjustment.create!({
-        :originator => action,
-        :amount => 10,
-        :label => "Promotional adjustment"
-      })
+      Spree::Adjustment.create!({ :originator => action, :amount => 10, :label => "Promotional adjustment"}, :without_protection => true)
     end
 
     it "counts eligible adjustments" do

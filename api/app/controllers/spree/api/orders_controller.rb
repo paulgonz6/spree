@@ -2,9 +2,6 @@ module Spree
   module Api
     class OrdersController < Spree::Api::BaseController
 
-      skip_before_filter :check_for_user_or_api_key, only: :apply_coupon_code
-      skip_before_filter :authenticate_user, only: :apply_coupon_code
-
       # Dynamically defines our stores checkout steps to ensure we check authorization on each step.
       Order.checkout_steps.keys.each do |step|
         define_method step do
@@ -47,7 +44,7 @@ module Spree
       end
 
       def update
-        find_order
+        find_order(true)
         # Parsing line items through as an update_attributes call in the API will result in
         # many line items for the same variant_id being created. We must be smarter about this,
         # hence the use of the update_line_items method, defined within order_decorator.rb.
@@ -70,38 +67,6 @@ module Spree
         else
           render "spree/api/errors/unauthorized", status: :unauthorized
         end
-      end
-
-      ##
-      # Applies a promotion code to the user's most recent order
-      # This is a temporary API method until we move to next Spree release which has this logic already in this commit.
-      #
-      # https://github.com/spree/spree/commit/72a5b74c47af975fc3492580415a4cdc2dc02c0c 
-      #
-      # Source references:
-      #
-      # https://github.com/spree/spree/blob/master/frontend/app/controllers/spree/store_controller.rb#L13
-      # https://github.com/spree/spree/blob/2-1-stable/frontend/app/controllers/spree/orders_controller.rb#L100
-      def apply_coupon_code
-        find_order
-        @order.coupon_code = params[:coupon_code]
-        @order.save
-
-        # https://github.com/spree/spree/blob/2-1-stable/core/lib/spree/promo/coupon_applicator.rb
-        result = Spree::Promo::CouponApplicator.new(@order).apply
-
-        result[:coupon_applied?]  ||= false
-
-        # Move flash.notice fields into success if applied
-        # An error message is in result[:error]
-        if result[:coupon_applied?] && result[:notice]
-          result[:success] = result[:notice]
-        end
-
-        # Need to turn hash result into object for RABL
-        # https://github.com/nesquena/rabl/wiki/Rendering-hash-objects-in-rabl
-        @coupon_result = OpenStruct.new(result)
-        render status: @coupon_result.coupon_applied? ? 200 : 422
       end
 
       private
@@ -160,17 +125,13 @@ module Spree
           end
         end
 
-        def find_order
-          @order = Spree::Order.find_by!(number: params[:id])
-          authorize! :update, @order, order_token
+        def find_order(lock = false)
+          @order = Spree::Order.lock(lock).find_by!(number: params[:id])
+          authorize! :update, @order, params[:order_token]
         end
 
         def before_delivery
           @order.create_proposed_shipments
-        end
-
-        def order_token
-          request.headers["X-Spree-Order-Token"] || params[:order_token]
         end
     end
   end

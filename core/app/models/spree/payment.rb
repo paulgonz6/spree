@@ -30,7 +30,7 @@ module Spree
     scope :completed, -> { with_state('completed') }
     scope :pending, -> { with_state('pending') }
     scope :failed, -> { with_state('failed') }
-    scope :valid, -> { where.not(state: %w(failed invalid)) }
+    scope :valid, -> { where('state NOT IN (?)', %w(failed invalid)) }
 
     after_rollback :persist_invalid
 
@@ -119,16 +119,11 @@ module Spree
     end
 
     def is_avs_risky?
-      return false if avs_response == "D"
-      return false if avs_response.blank?
-      return true
+      !(avs_response == "D" || avs_response.nil?)
     end
 
     def is_cvv_risky?
-      return false if cvv_response_code == "M"
-      return false if cvv_response_code.nil?
-      return false if cvv_response_message.present?
-      return true
+      !(cvv_response_code == "M" || cvv_response_code.nil?)
     end
 
     private
