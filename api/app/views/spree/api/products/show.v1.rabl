@@ -1,3 +1,4 @@
+# FORK_STATUS: PR was accepted by Spree. https://github.com/spree/spree/commit/e3c8b0f84a4cb6505d0b40c5d9ef541804860822
 object @product
 cache @product
 attributes *product_attributes

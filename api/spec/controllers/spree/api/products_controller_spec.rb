@@ -7,6 +7,7 @@ module Spree
 
     let!(:product) { create(:product) }
     let!(:inactive_product) { create(:product, :available_on => Time.now.tomorrow, :name => "inactive") }
+    # FORK_STATUS: PR has been accepted by Spree, https://github.com/spree/spree/commit/e3c8b0f84a4cb6505d0b40c5d9ef541804860822
     let(:base_attributes) { [:id, :name, :description, :price, :display_price, :available_on, :permalink, :meta_description, :meta_keywords, :shipping_category_id, :taxon_ids] }
     let(:show_attributes) { base_attributes.dup.push(:has_variants) }
     let(:new_attributes) { base_attributes }

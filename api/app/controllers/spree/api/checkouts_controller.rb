@@ -15,6 +15,7 @@ module Spree
       end
 
       def next
+        # FORK_STATUS: Pending PR on Spree, https://github.com/spree/spree/pull/4286
         load_order(true)
         authorize! :update, @order, params[:order_token]
         @order.next!
@@ -87,6 +88,7 @@ module Spree
           false
         end
 
+        # FORK_STATUS: Pending PR on https://github.com/spree/spree/pull/4286
         def load_order(lock = false)
           @order = Spree::Order.lock(lock).find_by!(number: params[:id])
           raise_insufficient_quantity and return if @order.insufficient_stock_lines.present?

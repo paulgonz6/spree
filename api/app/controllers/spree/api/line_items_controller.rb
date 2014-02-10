@@ -34,9 +34,7 @@ module Spree
       end
 
       private
-        ##
-        # TODO: This needs to get into Spree or it needs to be bumped down into Spree-Backend
-        #
+        # FORK_STATUS: This needs to get into Spree or it needs to be bumped down into Spree-Backend
         def update_order
           @order.ensure_updated_shipments
           @order.update_totals

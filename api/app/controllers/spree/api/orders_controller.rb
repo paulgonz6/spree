@@ -44,6 +44,7 @@ module Spree
       end
 
       def update
+        # FORK_STATUS: Pending PR on Spree, https://github.com/spree/spree/pull/4286
         find_order(true)
         # Parsing line items through as an update_attributes call in the API will result in
         # many line items for the same variant_id being created. We must be smarter about this,
