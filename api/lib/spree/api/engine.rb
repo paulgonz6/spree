@@ -1,4 +1,5 @@
 require 'rails/engine'
+require 'versioncake'
 
 module Spree
   module Api
@@ -11,8 +12,8 @@ module Spree
         config.include_child_root = false
       end
 
-      config.view_versions = [1]
-      config.view_version_extraction_strategy = :http_header
+      config.versioncake.supported_version_numbers = [1]
+      config.versioncake.extraction_strategy = :http_header
 
       initializer "spree.api.environment", :before => :load_config_initializers do |app|
         Spree::Api::Config = Spree::ApiConfiguration.new
