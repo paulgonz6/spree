@@ -17,5 +17,6 @@ Gem::Specification.new do |gem|
 
   gem.add_dependency 'spree_core', version
   gem.add_dependency 'rabl', '0.8.4'
+  # FORK_STATUS: Pending merge into 2-1-dev
   gem.add_dependency 'versioncake', '~> 2.0.0'
 end
