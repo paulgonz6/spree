@@ -4,10 +4,10 @@ This fork of spree is currently tracking spree/2-2-stable. Ideally any code on t
 
 New Feature Development:
 
-* Branch off of 2-2-dev
-* Since our fork's code is essentially purgatory, leave a comment with the words `FORK_STATUS` and its status so that we can look for it later to remove
-* Submit a pull request to 2-2-dev
-* Review pulls down the code, runs tests, merges or cherry-picks (if we want to keep the git history clean similar to spree), then pushes to 2-2-dev
+* Branch off of master
+* Submit pull request to Spree
+* If the code is accepted, either cherry-pick it over to our fork, or update against the latest of that version of spree
+* If the code is rejected, try to bring it into spree-backend instead of our fork of spree
 
 Updating Against Upstream:
 
