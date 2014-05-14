@@ -322,6 +322,18 @@ describe Spree::Order do
       order.process_payments!.should be_false
     end
 
+    context "payment too small" do
+      let(:payment) { stub_model(Spree::Payment, amount: 5) }
+
+      it "should reset the payment amount to the amount due" do
+        payment.should_receive(:process!)
+        payment.should_receive(:completed?).and_return(true)
+        order.process_payments!
+        payment.amount.should == order.total
+        order.payment_total.should == order.total
+      end
+    end
+
     context "when a payment raises a GatewayError" do
       before { payment.should_receive(:process!).and_raise(Spree::Core::GatewayError) }
 
