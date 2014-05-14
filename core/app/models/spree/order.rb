@@ -385,6 +385,11 @@ module Spree
       if pending_payments.empty?
         raise Core::GatewayError.new Spree.t(:no_pending_payments)
       else
+        # if there is only one payment method then ensure that we charge the amount due
+        if pending_payments.length == 1
+          pending_payments.first.update_column(:amount, total-payment_total)
+        end
+
         pending_payments.each do |payment|
           break if payment_total >= total
 
