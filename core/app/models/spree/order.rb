@@ -381,6 +381,10 @@ module Spree
         pending_payments.each do |payment|
           break if payment_total >= total
 
+          # TEMPORARY HACK
+          payment.update_column(:amount, total-payment_total)
+          # END HACK
+
           payment.process!
 
           if payment.completed?
