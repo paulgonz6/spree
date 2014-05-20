@@ -322,15 +322,35 @@ describe Spree::Order do
       order.process_payments!.should be_false
     end
 
-    context "payment too small" do
-      let(:payment) { stub_model(Spree::Payment, amount: 5) }
+    context "when payment is too small" do
+      context "with a single payment" do
+        before { order.stub :pending_payments => [payment], :total => 10 }
+        let(:payment) { stub_model(Spree::Payment, amount: 9) }
 
-      it "should reset the payment amount to the amount due" do
-        payment.should_receive(:process!)
-        payment.should_receive(:completed?).and_return(true)
-        order.process_payments!
-        payment.amount.should == order.total
-        order.payment_total.should == order.total
+        it "should reset the payment amount to the amount due" do
+          payment.should_receive(:process!)
+          payment.should_receive(:completed?).and_return(true)
+          order.process_payments!
+          payment.amount.should == 10
+          order.payment_total.should == 10
+        end
+      end
+
+      context "with multiple payments" do
+        before { order.stub :pending_payments => [payment1, payment2], :total => 10 }
+        let(:payment1) { stub_model(Spree::Payment, amount: 1) }
+        let(:payment2) { stub_model(Spree::Payment, amount: 1) }
+
+        it "should only charge the payment amount" do
+          payment1.should_receive(:process!)
+          payment1.should_receive(:completed?).and_return(true)
+          payment2.should_receive(:process!)
+          payment2.should_receive(:completed?).and_return(true)
+          order.process_payments!
+          payment1.amount.should == 1
+          payment2.amount.should == 1
+          order.payment_total.should == 2
+        end
       end
     end
 
