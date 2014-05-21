@@ -134,7 +134,11 @@ module Spree::Preferences::Preferable
   end
 
   def preference_store
-    Spree::Preferences::Store.instance
+    if defined?(Spree::Preferences::InMemoryStore)
+      Spree::Preferences::InMemoryStore.instance
+    else
+      Spree::Preferences::Store.instance
+    end
   end
 
 end
