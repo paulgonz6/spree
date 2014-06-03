@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Spree::CheckoutController do
   let(:token) { 'some_token' }
-  let(:user) { stub_model(Spree::LegacyUser) }
+  let(:user) { create(:user) }
   let(:order) { FactoryGirl.create(:order_with_totals) }
 
   let(:address_params) do
@@ -45,20 +45,6 @@ describe Spree::CheckoutController do
       order.update_column(:state, "address")
       spree_get :edit, { :state => "delivery" }
       response.should redirect_to spree.checkout_state_path("address")
-    end
-
-    context "when entering the checkout" do
-      before do
-        # The first step for checkout controller is address
-        # Transitioning into this state first is required
-        order.update_column(:state, "address")
-      end
-
-      it "should associate the order with a user" do
-        order.user = nil
-        order.should_receive(:associate_user!).with(user)
-        spree_get :edit, {}, :order_id => 1
-      end
     end
   end
 

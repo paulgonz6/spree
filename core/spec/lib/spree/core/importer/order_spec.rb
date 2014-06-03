@@ -8,7 +8,7 @@ module Spree
       let!(:state) { country.states.first || create(:state, :country => country) }
       let!(:stock_location) { create(:stock_location) }
 
-      let(:user) { stub_model(LegacyUser, :email => 'fox@mudler.com') }
+      let(:user) { create(:user, :email => 'fox@mudler.com') }
       let(:shipping_method) { create(:shipping_method) }
       let(:payment_method) { create(:check_payment_method) }
 
@@ -64,7 +64,7 @@ module Spree
         params = { :line_items_attributes => line_items }
 
         Importer::Order.should_receive(:ensure_variant_id_from_params)
-        order = Importer::Order.import(user,params)
+        order = Importer::Order.import(nil,params)
         order.user.should == nil
         line_item = order.line_items.first
         line_item.quantity.should == 5

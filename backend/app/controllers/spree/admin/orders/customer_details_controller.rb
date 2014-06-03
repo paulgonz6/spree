@@ -20,9 +20,6 @@ module Spree
 
         def update
           if @order.update_attributes(order_params)
-            if params[:guest_checkout] == "false"
-              @order.associate_user!(Spree.user_class.find(params[:user_id]), @order.email.blank?)
-            end
             while @order.next; end
 
             @order.refresh_shipment_rates
@@ -39,6 +36,7 @@ module Spree
             params.require(:order).permit(
               :email,
               :use_billing,
+              :user_id,
               :bill_address_attributes => permitted_address_attributes,
               :ship_address_attributes => permitted_address_attributes
             )

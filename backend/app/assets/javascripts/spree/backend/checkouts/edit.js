@@ -29,10 +29,7 @@ $(document).ready(function() {
       formatResult: formatCustomerResult,
       formatSelection: function (customer) {
         $('#order_email').val(customer.email);
-        $('#user_id').val(customer.id);
-        $('#guest_checkout_true').prop("checked", false);
-        $('#guest_checkout_false').prop("checked", true);
-        $('#guest_checkout_false').prop("disabled", false);
+        $('#order_user_id').val(customer.id);
 
         return customer.email;
       }
@@ -54,17 +51,4 @@ $(document).ready(function() {
   });
 
   order_use_billing();
-
-  $('#guest_checkout_true').change(function() {
-    $('#customer_search').val("");
-    $('#user_id').val("");
-    $('#checkout_email').val("");
-
-    var fields = ["firstname", "lastname", "company", "address1", "address2",
-              "city", "zipcode", "state_id", "country_id", "phone"]
-    $.each(fields, function(i, field) {
-      $('#order_bill_address_attributes' + field).val("");
-      $('#order_ship_address_attributes' + field).val("");
-    })
-  });
 });

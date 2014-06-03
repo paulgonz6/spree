@@ -27,7 +27,7 @@ module Spree
                                :country_id => Country.first.id, :state_id => State.first.id} }
 
     let(:current_api_user) do
-      user = Spree.user_class.new(:email => "spree@example.com")
+      user = Spree.user_class.create!(:email => "spree@example.com")
       user.generate_spree_api_key!
       user
     end
@@ -166,7 +166,6 @@ module Spree
     # Regression test for #3404
     it "can specify additional parameters for a line item" do
       Order.should_receive(:create!).and_return(order = Spree::Order.new)
-      order.stub(:associate_user!)
       order.stub_chain(:contents, :add).and_return(line_item = double('LineItem'))
       line_item.should_receive(:update_attributes).with("special" => true)
 
@@ -206,7 +205,6 @@ module Spree
     # Regression test for #3404
     it "does not update line item needlessly" do
       Order.should_receive(:create!).and_return(order = Spree::Order.new)
-      order.stub(:associate_user!)
       order.stub_chain(:contents, :add).and_return(line_item = double('LineItem'))
       line_item.should_not_receive(:update_attributes)
       api_post :create, :order => {
@@ -578,7 +576,7 @@ module Spree
 
       context "updating" do
         it "can set the user_id for the order" do
-          user = Spree.user_class.create
+          user = Spree.user_class.create!
           api_post :update, :id => order.number, :order => { user_id: user.id }
           expect(response.status).to eq 200
           json_response["user_id"].should == user.id

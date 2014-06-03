@@ -154,5 +154,9 @@ module Spree
           end
         end
       end
+
+      def associate_user
+        @order.user = try_spree_current_user
+      end
   end
 end

@@ -9,7 +9,7 @@ class FakeCalculator < Spree::Calculator
 end
 
 describe Spree::Order do
-  let(:user) { stub_model(Spree::LegacyUser, :email => "spree@example.com") }
+  let(:user) { create(:user, :email => "spree@example.com") }
   let(:order) { stub_model(Spree::Order, :user => user) }
 
   before do
@@ -474,19 +474,17 @@ describe Spree::Order do
     end
   end
 
-  context "#associate_user!" do
-    let!(:user) { FactoryGirl.create(:user) }
+  context "associating a user" do
+    let!(:user) { create(:user) }
+
+    it { pending "Write specs for guest checkout" }
 
     it "should associate a user with a persisted order" do
       order = FactoryGirl.create(:order_with_line_items, created_by: nil)
       order.user = nil
       order.email = nil
-      order.associate_user!(user)
-      order.user.should == user
-      order.email.should == user.email
-      order.created_by.should == user
-
-      # verify that the changes we made were persisted
+      order.save!
+      order.update_attributes!(user: user)
       order.reload
       order.user.should == user
       order.email.should == user.email
@@ -499,7 +497,7 @@ describe Spree::Order do
 
       order.user = nil
       order.email = nil
-      order.associate_user!(user)
+      order.update_attributes!(user: user)
       order.user.should == user
       order.email.should == user.email
       order.created_by.should == creator
@@ -516,7 +514,7 @@ describe Spree::Order do
       order = Spree::Order.new
 
       expect do
-        order.associate_user!(user)
+        order.update_attributes!(user: user)
       end.to change { [order.user, order.email] }.from([nil, nil]).to([user, user.email])
     end
 
@@ -526,7 +524,8 @@ describe Spree::Order do
       order.email = nil
       order.ship_address = address
       expect do
-        order.associate_user!(user)
+        order.user = user
+        order.send(:copy_user_attributes)
       end.not_to change { address.persisted? }.from(false)
     end
   end

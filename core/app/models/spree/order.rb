@@ -69,6 +69,7 @@ module Spree
     before_validation :set_currency
     before_validation :generate_order_number, on: :create
     before_validation :clone_billing_address, if: :use_billing?
+    before_validation :copy_user_attributes
     attr_accessor :use_billing
 
     before_create :link_by_email
@@ -241,20 +242,6 @@ module Spree
       @contents ||= Spree::OrderContents.new(self)
     end
 
-    # Associates the specified user with the order.
-    def associate_user!(user, override_email = true)
-      self.user = user
-      attrs_to_set = { user_id: user.id }
-      attrs_to_set[:email] = user.email if override_email
-      attrs_to_set[:created_by_id] = user.id if self.created_by.blank?
-      assign_attributes(attrs_to_set)
-
-      if persisted?
-        # immediately persist the changes we just made, but don't use save since we might have an invalid address associated
-        self.class.unscoped.where(id: id).update_all(attrs_to_set)
-      end
-    end
-
     # FIXME refactor this method and implement validation using validates_* utilities
     def generate_order_number
       record = true
@@ -413,7 +400,7 @@ module Spree
         end
       end
 
-      self.associate_user!(user) if !self.user && !user.blank?
+      self.user = user if !self.user && !user.blank?
 
       updater.update_item_count
       updater.update_item_total
@@ -640,5 +627,19 @@ module Spree
         self.currency = Spree::Config[:currency] if self[:currency].nil?
       end
 
+      def copy_user_attributes
+        if user_id_changed? && user_id.present?
+          user = Spree.user_class.find(user_id)
+          attrs_to_set = { user_id: user.id }
+          attrs_to_set[:email] = user.email if self.email.blank?
+          attrs_to_set[:created_by_id] = user.id if self.created_by.blank?
+          assign_attributes(attrs_to_set)
+
+          if persisted?
+            # immediately persist the changes we just made, but don't use save since we might have an invalid address associated
+            self.class.unscoped.where(id: id).update_all(attrs_to_set)
+          end
+        end
+      end
   end
 end

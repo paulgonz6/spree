@@ -48,15 +48,6 @@ module Spree
           end
         end
 
-        def associate_user
-          @order ||= current_order
-          if try_spree_current_user && @order
-            @order.associate_user!(try_spree_current_user) if @order.user.blank? || @order.email.blank?
-          end
-
-          session[:guest_token] = nil
-        end
-
         def set_current_order
           if user = try_spree_current_user
             last_incomplete_order = user.last_incomplete_spree_order

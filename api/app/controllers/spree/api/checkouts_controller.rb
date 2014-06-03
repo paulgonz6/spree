@@ -1,8 +1,6 @@
 module Spree
   module Api
     class CheckoutsController < Spree::Api::BaseController
-      before_filter :associate_user, only: :update
-
       include Spree::Core::ControllerHelpers::Auth
       include Spree::Core::ControllerHelpers::Order
       # This before_filter comes from Spree::Core::ControllerHelpers::Order
@@ -29,10 +27,6 @@ module Spree
         authorize! :update, @order, order_token
 
         if @order.update_from_params(params, permitted_checkout_attributes, request.headers.env)
-          if current_api_user.has_spree_role?('admin') && user_id.present?
-            @order.associate_user!(Spree.user_class.find(user_id))
-          end
-
           return if after_update_attributes
           state_callback(:after) if @order.next
           respond_with(@order, default_template: 'spree/api/orders/show')
@@ -95,6 +89,14 @@ module Spree
 
         def order_id
           super || params[:id]
+        end
+
+        def permitted_checkout_attributes
+          if current_api_user.has_spree_role? "admin"
+            super | [:user_id]
+          else
+            super
+          end
         end
     end
   end

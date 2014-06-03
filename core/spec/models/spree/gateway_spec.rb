@@ -23,7 +23,8 @@ describe Spree::Gateway do
   end
 
   context "fetching payment sources" do
-    let(:order) { Spree::Order.create(user_id: 1) }
+    let(:user)  { create(:user) }
+    let(:order) { Spree::Order.create(user_id: user.id) }
 
     let(:has_card) { create(:credit_card_payment_method) }
     let(:no_card) { create(:credit_card_payment_method) }
@@ -44,7 +45,7 @@ describe Spree::Gateway do
     end
 
     it "finds credit cards associated with the order user" do
-      cc.update_column :user_id, 1
+      cc.update_column :user_id, user.id
       payment.order.stub completed?: false
 
       expect(no_card.reusable_sources(payment.order)).to be_empty

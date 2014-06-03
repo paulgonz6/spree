@@ -5,13 +5,13 @@ module Spree
 
         def self.import(user, params)
           begin
+            params[:user_id] ||= user.try(:id)
             ensure_country_id_from_params params[:ship_address_attributes]
             ensure_state_id_from_params params[:ship_address_attributes]
             ensure_country_id_from_params params[:bill_address_attributes]
             ensure_state_id_from_params params[:bill_address_attributes]
 
             order = Spree::Order.create!
-            order.associate_user!(user)
 
             create_shipments_from_params(params.delete(:shipments_attributes), order)
             create_line_items_from_params(params.delete(:line_items_attributes),order)

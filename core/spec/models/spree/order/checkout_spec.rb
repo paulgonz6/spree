@@ -2,6 +2,7 @@ require 'spec_helper'
 require 'spree/testing_support/order_walkthrough'
 
 describe Spree::Order do
+  let(:user)  { create(:user) }
   let(:order) { Spree::Order.new }
 
   def assert_state_changed(order, from, to)
@@ -478,7 +479,7 @@ describe Spree::Order do
         )
       end
 
-      before { order.user_id = 3 }
+      before { order.user_id = user.id }
 
       it "sets confirmation value when its available via :cvc_confirm" do
         Spree::CreditCard.stub find: credit_card

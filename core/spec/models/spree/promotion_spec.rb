@@ -82,7 +82,7 @@ describe Spree::Promotion do
       promotion.promotion_actions = [@action1, @action2]
       promotion.created_at = 2.days.ago
 
-      @user = stub_model(Spree::LegacyUser, :email => "spree@example.com")
+      @user = create(:user, :email => "spree@example.com")
       @order = Spree::Order.create user: @user
       @payload = { :order => @order, :user => @user }
     end

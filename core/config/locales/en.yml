@@ -611,7 +611,6 @@ en:
     general_settings: General Settings
     google_analytics: Google Analytics
     google_analytics_id: Analytics ID
-    guest_checkout: Guest Checkout
     guest_user_account: Checkout as a Guest
     has_no_shipped_units: has no shipped units
     height: Height
