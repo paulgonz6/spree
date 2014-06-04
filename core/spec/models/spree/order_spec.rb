@@ -322,51 +322,6 @@ describe Spree::Order do
       order.process_payments!.should be_false
     end
 
-    context "when payment amount is incorrect" do
-      context "with a single too small payment" do
-        before { order.stub :pending_payments => [payment], :total => 10 }
-        let(:payment) { stub_model(Spree::Payment, amount: 9) }
-
-        it "should reset the payment amount to the amount due" do
-          payment.should_receive(:process!)
-          payment.should_receive(:completed?).and_return(true)
-          order.process_payments!
-          payment.amount.should == 10
-          order.payment_total.should == 10
-        end
-      end
-
-      context "with a single too big payment" do
-        before { order.stub :pending_payments => [payment], :total => 10 }
-        let(:payment) { stub_model(Spree::Payment, amount: 11) }
-
-        it "should reset the payment amount to the amount due" do
-          payment.should_receive(:process!)
-          payment.should_receive(:completed?).and_return(true)
-          order.process_payments!
-          payment.amount.should == 10
-          order.payment_total.should == 10
-        end
-      end
-
-      context "with multiple payments" do
-        before { order.stub :pending_payments => [payment1, payment2], :total => 10 }
-        let(:payment1) { stub_model(Spree::Payment, amount: 1) }
-        let(:payment2) { stub_model(Spree::Payment, amount: 1) }
-
-        it "should only charge the payment amount" do
-          payment1.should_receive(:process!)
-          payment1.should_receive(:completed?).and_return(true)
-          payment2.should_receive(:process!)
-          payment2.should_receive(:completed?).and_return(true)
-          order.process_payments!
-          payment1.amount.should == 1
-          payment2.amount.should == 1
-          order.payment_total.should == 2
-        end
-      end
-    end
-
     context "when a payment raises a GatewayError" do
       before { payment.should_receive(:process!).and_raise(Spree::Core::GatewayError) }
 
@@ -936,6 +891,47 @@ describe Spree::Order do
       order.updater.should_receive(:update_shipment_total)
       order.updater.should_receive(:persist_totals)
       order.apply_free_shipping_promotions
+    end
+  end
+
+  context "#ensure_capturable_payment_amount_matches_total" do
+    context "insufficient capturable payment amount" do
+      let(:order) { FactoryGirl.create(:order, total: 20.0, state: 'payment', payments: [FactoryGirl.create(:payment, state: 'checkout', amount: 10.0)]) }
+
+      it "returns false" do
+        order.ensure_capturable_payment_amount_matches_total.should be_false
+      end
+
+      it "adds an error" do
+        order.ensure_capturable_payment_amount_matches_total
+        order.errors.full_messages.should include(Spree.t(:collected_payment_does_not_match_order_total))
+      end
+    end
+
+    context "sufficient capturable payment amount" do
+      let(:order) { FactoryGirl.create(:order, total: 10.0, state: 'payment', payments: [FactoryGirl.create(:payment, state: 'checkout', amount: 10.0)]) }
+
+      it "returns true" do
+        order.ensure_capturable_payment_amount_matches_total.should be_true
+      end
+
+      it "does not add an error" do
+        order.ensure_capturable_payment_amount_matches_total
+        order.errors.should be_empty
+      end
+    end
+
+    context "capturable payment amount exceeds order total" do
+      let(:order) { FactoryGirl.create(:order, total: 10.0, state: 'payment', payments: [FactoryGirl.create(:payment, state: 'checkout', amount: 100.0)]) }
+
+      it "returns false" do
+        order.ensure_capturable_payment_amount_matches_total.should be_false
+      end
+
+      it "adds an error" do
+        order.ensure_capturable_payment_amount_matches_total
+        order.errors.full_messages.should include(Spree.t(:collected_payment_does_not_match_order_total))
+      end
     end
   end
 end

@@ -385,11 +385,6 @@ module Spree
       if pending_payments.empty?
         raise Core::GatewayError.new Spree.t(:no_pending_payments)
       else
-        # if there is only one payment method then ensure that we charge the amount due
-        if pending_payments.length == 1
-          pending_payments.first.update_column(:amount, total-payment_total)
-        end
-
         pending_payments.each do |payment|
           break if payment_total >= total
 
@@ -594,6 +589,12 @@ module Spree
     def reload
       remove_instance_variable(:@tax_zone) if defined?(@tax_zone)
       super
+    end
+
+    def ensure_capturable_payment_amount_matches_total
+      payment_matches_total = payments.valid.to_a.sum(&:amount) == total
+      errors.add(:base, Spree.t(:collected_payment_does_not_match_order_total)) unless payment_matches_total
+      payment_matches_total
     end
 
     private
