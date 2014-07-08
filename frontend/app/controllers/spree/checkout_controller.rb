@@ -80,13 +80,6 @@ module Spree
         end
       end
 
-      def lock_order
-        OrderMutex.with_lock!(@order) { yield }
-      rescue Spree::OrderMutex::LockFailed => e
-        flash[:error] = Spree.t(:order_mutex_error)
-        redirect_to spree.cart_path
-      end
-
       def ensure_checkout_allowed
         unless @order.checkout_allowed?
           redirect_to spree.cart_path

@@ -9,6 +9,7 @@ module Spree
     respond_to :html
 
     before_filter :assign_order, only: :update
+    # note: do not lock the #edit action because that's where we redirect when we fail to acquire a lock
     around_filter :lock_order, only: :update
     before_filter :apply_coupon_code, only: :update
     skip_before_filter :verify_authenticity_token
@@ -103,11 +104,5 @@ module Spree
         end
       end
 
-      def lock_order
-        OrderMutex.with_lock!(@order) { yield }
-      rescue Spree::OrderMutex::LockFailed => e
-        flash[:error] = Spree.t(:order_mutex_error)
-        redirect_to spree.cart_path
-      end
   end
 end
