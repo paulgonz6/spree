@@ -80,22 +80,8 @@ module Spree
         end
       end
 
-      def credit!(credit_amount=nil, return_authorization=nil)
-        Spree::Refund.perform!(self, (credit_amount || credit_allowed).to_f, return_authorization)
-      end
-
       def cancel!
-        if payment_method.respond_to?(:cancel)
-          payment_method.cancel(response_code)
-        else
-          credit!
-        end
-      end
-
-      def partial_credit(amount)
-        return if amount > credit_allowed
-        started_processing!
-        credit!(amount)
+        payment_method.cancel(response_code)
       end
 
       def gateway_options

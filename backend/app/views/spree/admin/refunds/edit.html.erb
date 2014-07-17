@@ -1,0 +1,18 @@
+<%= form_for [:admin, @refund.payment.order, @refund.payment, Spree::Refund.new] do |f| %>
+  <fieldset class="no-border-top">
+    <div data-hook="admin_refund_form_fields" class="row">
+      <div class="alpha three columns">
+        <div class="field">
+          <%= Spree.t(:amount) %><br/>
+          <%= @refund.amount %>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-buttons filter-actions actions" data-hook="buttons">
+      <%= button Spree.t('actions.save'), 'ok' %>
+      <span class="or"><%= Spree.t(:or) %></span>
+      <%= button_link_to Spree.t('actions.cancel'), admin_order_payments_url(@refund.payment.order), :icon => 'remove' %>
+    </div>
+  </fieldset>
+<% end %>
