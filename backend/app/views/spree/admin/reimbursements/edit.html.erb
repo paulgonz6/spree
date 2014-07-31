@@ -17,6 +17,8 @@
       <tr>
         <th><%= Spree.t(:product) %></th>
         <th><%= Spree.t(:inventory_state) %></th>
+        <th><%= Spree.t(:preferred_reimbursement_type) %></th>
+        <th><%= Spree.t(:reimbursement_type_override) %></th>
         <th><%= Spree.t(:total) %></th>
       </tr>
     </thead>
@@ -28,6 +30,12 @@
             <div class="variant-options"><%= return_item.inventory_unit.variant.options_text %></div>
           </td>
           <td class="align-center"><%= return_item.inventory_unit.state.humanize %></td>
+          <td class="align-center">
+            <%= reimbursement_type_name(return_item.preferred_reimbursement_type) %>
+          </td>
+          <td class="align-center">
+            <%= reimbursement_type_name(return_item.override_reimbursement_type) %>
+          </td>
           <td class="align-center">
             <%= return_item.display_total %>
           </td>

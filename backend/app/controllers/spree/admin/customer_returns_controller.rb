@@ -3,6 +3,7 @@ module Spree
     class CustomerReturnsController < Spree::Admin::BaseController
       before_filter :load_order
       before_filter :load_return_items, only: [:new, :edit, :create]
+      before_filter :load_reimbursement_types, only: [:new, :edit, :create]
       before_filter :load_editable_setting, only: [:new, :edit, :create]
 
       def index
@@ -47,6 +48,10 @@ module Spree
           return_items_by_rma_id = @order.inventory_units.map(&:current_or_new_return_item).group_by(&:return_authorization_id)
           @new_return_items = filter_return_items_with_customer_returns(return_items_by_rma_id.delete(nil))
           @rma_return_items = filter_return_items_with_customer_returns(return_items_by_rma_id.values.flatten)
+        end
+
+        def load_reimbursement_types
+          @reimbursement_types = Spree::ReimbursementType.accessible_by(current_ability, :read).active
         end
 
         def load_editable_setting

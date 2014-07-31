@@ -4,6 +4,7 @@
       f: f,
       table_title: Spree.t(:items_in_rmas),
       return_items: @rma_return_items,
+      reimbursement_types: @reimbursement_types,
       allow_amount_edit: @allow_amount_edit,
       data_hook: 'customer_return_rma_items'
     } %>
@@ -14,6 +15,7 @@
       f: f,
       table_title: Spree.t(:other_items_in_other),
       return_items: @new_return_items,
+      reimbursement_types: @reimbursement_types,
       allow_amount_edit: @allow_amount_edit,
       data_hook: 'customer_return_order_items'
     } %>

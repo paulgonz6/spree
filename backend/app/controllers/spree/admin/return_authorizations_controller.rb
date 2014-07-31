@@ -17,6 +17,7 @@ module Spree
 
       def load_form_data
         load_return_items
+        load_reimbursement_types
         load_return_authorization_reasons
 
         @allow_amount_edit = can?(:manage, Spree::CustomerReturn)
@@ -34,6 +35,10 @@ module Spree
         end
 
         @form_return_items = (@return_authorization.return_items + new_return_items).sort_by(&:inventory_unit_id)
+      end
+
+      def load_reimbursement_types
+        @reimbursement_types = Spree::ReimbursementType.accessible_by(current_ability, :read).active
       end
 
       def load_return_authorization_reasons

@@ -8,6 +8,8 @@ module Spree
     belongs_to :exchange_variant, class: 'Spree::Variant'
     belongs_to :customer_return, inverse_of: :return_items
     belongs_to :reimbursement, inverse_of: :return_items
+    belongs_to :override_reimbursement_type, foreign_key: :override_reimbursement_type_id, class_name: 'Spree::ReimbursementType'
+    belongs_to :preferred_reimbursement_type, foreign_key: :preferred_reimbursement_type_id, class_name: 'Spree::ReimbursementType'
 
     validate :belongs_to_same_customer_order
     validate :validate_acceptance_status_for_reimbursement

@@ -192,6 +192,9 @@ en:
       spree/reimbursement:
         one: Reimbursement
         other: Reimbursements
+      spree/reimbursement_type:
+        one: Reimbursement Type
+        other: Reimbursement Types
       spree/return_authorization:
         one: Return Authorization
         other: Return Authorizations
@@ -445,6 +448,7 @@ en:
     back_to_prototypes_list: Back To Prototypes List
     back_to_reports_list: Back To Reports List
     back_to_refund_reason_list: Back To Refund Reason List
+    back_to_reimbursement_type_list: Back To Reimbursement Type List
     back_to_rma_reason_list: Back To RMA Reason List
     back_to_shipping_categories: Back To Shipping Categories
     back_to_shipping_categories_list: Back To Shipping Categories List
@@ -599,6 +603,7 @@ en:
     edit_refund_reason: Edit Refund Reason
     editing_refund_reason: Editing Refund Reason
     editing_reimbursement: Editing Reimbursement
+    editing_reimbursement_type: Editing Reimbursement Type
     editing_rma_reason: Editing RMA Reason
     editing_shipping_category: Editing Shipping Category
     editing_shipping_method: Editing Shipping Method
@@ -792,6 +797,7 @@ en:
     new_prototype: New Prototype
     new_refund: New Refund
     new_refund_reason: New Refund Reason
+    new_reimbursement_type: New Reimbursement Type
     new_rma_reason: New RMA Reason
     new_return_authorization: New Return Authorization
     new_shipping_category: New Shipping Category
@@ -827,6 +833,7 @@ en:
     no_stock_locations_found: No stock locations found
     no_tracking_present: No tracking details provided.
     none: None
+    none_selected: None Selected
     normal_amount: Normal Amount
     not: not
     not_available: N/A
@@ -946,6 +953,7 @@ en:
     powered_by: Powered by
     pre_tax_refund_amount: Pre-Tax Refund Amount
     pre_tax_total: Pre-Tax Total
+    preferred_reimbursement_type: Preferred Reimbursement Type
     presentation: Presentation
     previous: Previous
     price: Price
@@ -1042,6 +1050,8 @@ en:
     reimbursement_perform_failed: "Reimbursement could not be performed.  Error: %{error}"
     reimbursement_status: Reimbursement status
     reimbursement_type: Reimbursement type
+    reimbursement_type_override: Reimbursement Type Override
+    reimbursement_types: Reimbursement Types
     reimbursements: Reimbursements
     reject: Reject
     rejected: Rejected
@@ -1088,6 +1098,8 @@ en:
     security_settings: Security Settings
     select: Select
     select_from_prototype: Select From Prototype
+    select_a_reimbursement_type: Select a reimbursement type
+    select_a_reimbursement_type_to_bulk_update: Select a reimbursement type to update selected items
     select_a_return_authorization_reason: Select a reason for the return authorization
     select_a_stock_location: Select a stock location
     select_stock: Select stock

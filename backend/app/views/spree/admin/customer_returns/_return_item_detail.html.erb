@@ -4,6 +4,8 @@
       <th><%= Spree.t(:product) %></th>
       <th><%= Spree.t(:reception_status) %></th>
       <th><%= Spree.t(:pre_tax_refund_amount) %></th>
+      <th><%= Spree.t(:preferred_reimbursement_type) %></th>
+      <th><%= Spree.t(:reimbursement_type_override) %></th>
     </tr>
   </thead>
   <tbody>
@@ -16,6 +18,12 @@
         <td class="align-center"><%= return_item.reception_status.humanize %></td>
         <td class="align-center">
           <%= return_item.display_pre_tax_amount %>
+        </td>
+        <td class="align-center">
+          <%= reimbursement_type_name(return_item.preferred_reimbursement_type) %>
+        </td>
+        <td class="align-center">
+          <%= reimbursement_type_name(return_item.override_reimbursement_type) %>
         </td>
       </tr>
     <% end %>

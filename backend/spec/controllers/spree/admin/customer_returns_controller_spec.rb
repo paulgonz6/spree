@@ -26,6 +26,9 @@ module Spree
 
       describe "#new" do
         let(:order) { create(:shipped_order, line_items_count: 1) }
+        let!(:inactive_reimbursement_type)      { create(:reimbursement_type, active: false) }
+        let!(:first_active_reimbursement_type)  { create(:reimbursement_type) }
+        let!(:second_active_reimbursement_type) { create(:reimbursement_type) }
 
         subject do
           spree_get :new, { order_id: order.to_param }
@@ -34,6 +37,13 @@ module Spree
         it "loads the order" do
           subject
           expect(assigns(:order)).to eq order
+        end
+
+        it "loads all the active reimbursement types" do
+          subject
+          assigns(:reimbursement_types).should include(first_active_reimbursement_type)
+          assigns(:reimbursement_types).should include(second_active_reimbursement_type)
+          assigns(:reimbursement_types).should_not include(inactive_reimbursement_type)
         end
 
         it "creates a new customer return" do

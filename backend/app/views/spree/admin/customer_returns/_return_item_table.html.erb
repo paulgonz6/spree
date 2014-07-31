@@ -12,6 +12,7 @@
           <th><%= Spree.t(:charged) %></th>
         <% end %>
         <th><%= Spree.t(:pre_tax_refund_amount) %></th>
+        <th><%= Spree.t(:reimbursement_type) %></th>
       </tr>
     </thead>
     <tbody>
@@ -49,8 +50,25 @@
               <%= return_item.display_pre_tax_amount %>
             <% end %>
           </td>
+          <td class='align-center'>
+            <% if inventory_unit.shipped? %>
+              <%= item_fields.select :override_reimbursement_type_id, reimbursement_types.collect{|r|[r.name, r.id]}, {include_blank: true}, {class: 'select2 fullwidth', "data-placeholder" => Spree.t(:select_a_reimbursement_type)} %>
+            <% end %>
+          </td>
         </tr>
       <% end %>
     </tbody>
   </table>
+
+  <div class='field refund-type-bulk-update'>
+    <table>
+      <tr>
+        <td class='align-right actions'>
+          <%= select_tag "reimbursement_type", options_from_collection_for_select(@reimbursement_types, 'id', 'name'), {include_blank: true, class: 'select2', "data-placeholder" => Spree.t(:select_a_reimbursement_type_to_bulk_update)} %>
+          <%= link_to '', '#', class: 'fa fa-refresh no-text with-tip reimbursement-type-bulk-updater', data: {action: 'save'}, title: Spree.t('actions.update') %>
+        </td>
+      </tr>
+    </table>
+  </div>
+
 </fieldset>
