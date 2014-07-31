@@ -65,6 +65,10 @@ module Spree
 
     end
 
+    def display_total
+      Spree::Money.new(total, { currency: order.currency })
+    end
+
     def calculated_total
       return_items.to_a.sum(&:total)
     end

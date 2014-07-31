@@ -29,6 +29,23 @@ describe Spree::Reimbursement do
     end
   end
 
+  describe "#display_total" do
+    let(:total)         { 100.50 }
+    let(:currency)      { "USD" }
+    let(:order)         { Spree::Order.new(currency: currency) }
+    let(:reimbursement) { Spree::Reimbursement.new(total: total, order: order) }
+
+    subject { reimbursement.display_total }
+
+    it "returns the value as a Spree::Money instance" do
+      expect(subject).to eq Spree::Money.new(total)
+    end
+
+    it "uses the order's currency" do
+      expect(subject.money.currency.to_s).to eq currency
+    end
+  end
+
   describe "#perform!" do
     let!(:adjustments)            { [] } # placeholder to ensure it gets run prior the "before" at this level
 
