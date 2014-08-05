@@ -2,9 +2,7 @@ module Spree
   module Admin
     class CustomerReturnsController < Spree::Admin::BaseController
       before_filter :load_order
-      before_filter :load_return_items, only: [:new, :edit, :create]
-      before_filter :load_reimbursement_types, only: [:new, :edit, :create]
-      before_filter :load_editable_setting, only: [:new, :edit, :create]
+      before_filter :load_form_data, only: [:new, :edit]
 
       def index
         order_return_items = Spree::ReturnItem.accessible_by(current_ability, :read).where(inventory_unit_id: @order.inventory_units.pluck(:id))
@@ -33,6 +31,7 @@ module Spree
           redirect_to admin_order_customer_return_path(@order, @customer_return)
         else
           flash[:error] = Spree.t(:could_not_create_customer_return)
+          load_form_data
           render action: "new"
         end
 
@@ -44,17 +43,13 @@ module Spree
           @order = Spree::Order.accessible_by(current_ability, :read).find_by(number: params[:order_id])
         end
 
-        def load_return_items
+        def load_form_data
           return_items_by_rma_id = @order.inventory_units.map(&:current_or_new_return_item).group_by(&:return_authorization_id)
           @new_return_items = filter_return_items_with_customer_returns(return_items_by_rma_id.delete(nil))
           @rma_return_items = filter_return_items_with_customer_returns(return_items_by_rma_id.values.flatten)
-        end
 
-        def load_reimbursement_types
           @reimbursement_types = Spree::ReimbursementType.accessible_by(current_ability, :read).active
-        end
 
-        def load_editable_setting
           @allow_amount_edit = can?(:manage, Spree::CustomerReturn)
         end
 
