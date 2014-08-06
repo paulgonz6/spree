@@ -8,33 +8,31 @@
   <li><%= button_link_to Spree.t(:back_to_customer_return_list), spree.admin_order_customer_returns_url(@order), :icon => 'arrow-left' %></li>
 <% end %>
 
-<%= form_for [:admin, @order, @customer_return] do |f| %>
-  <% if @manual_intervention_return_items.any? %>
-    <fieldset data-hook="manual_intervention_return_items" class="no-border-bottom">
-      <legend align="center"><%= Spree.t(:manual_intervention_required) %></legend>
-      <%= render partial: 'return_item_edit_table', locals: {f: f, return_items: @manual_intervention_return_items} %>
-    </fieldset>
-  <% end %>
+<% if @manual_intervention_return_items.any? %>
+  <fieldset data-hook="manual_intervention_return_items" class="no-border-bottom">
+    <legend align="center"><%= Spree.t(:manual_intervention_required) %></legend>
+    <%= render partial: 'return_item_decision', locals: {return_items: @manual_intervention_return_items} %>
+  </fieldset>
 <% end %>
 
 <% if @pending_return_items.any? %>
   <fieldset data-hook="accepted_return_items" class="no-border-bottom">
     <legend align="center"><%= Spree.t(:pending) %></legend>
-    <%= render partial: 'return_item_decision', locals: { return_items: @pending_return_items } %>
+    <%= render partial: 'return_item_decision', locals: {return_items: @pending_return_items} %>
   </fieldset>
 <% end %>
 
 <% if @accepted_return_items.any? %>
   <fieldset data-hook="accepted_return_items" class="no-border-bottom">
     <legend align="center"><%= Spree.t(:accepted) %></legend>
-    <%= render partial: 'return_item_detail', locals: { return_items: @accepted_return_items } %>
+    <%= render partial: 'return_item_detail', locals: {return_items: @accepted_return_items} %>
   </fieldset>
 <% end %>
 
 <% if @rejected_return_items.any? %>
   <fieldset data-hook="rejected_return_items" class="no-border-bottom">
     <legend align="center"><%= Spree.t(:rejected) %></legend>
-    <%= render partial: 'return_item_detail', locals: { return_items: @rejected_return_items } %>
+    <%= render partial: 'return_item_detail', locals: {return_items: @rejected_return_items} %>
   </fieldset>
 <% end %>
 

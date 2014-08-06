@@ -82,7 +82,7 @@ Spree::Core::Engine.add_routes do
       end
 
       resource :customer, :controller => "orders/customer_details"
-      resources :customer_returns, only: [:index, :new, :show, :edit, :create, :update] do
+      resources :customer_returns, only: [:index, :new, :edit, :create, :update] do
         member do
           put :refund
         end
