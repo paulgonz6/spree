@@ -6,26 +6,26 @@ module Spree
     belongs_to :customer_return, inverse_of: :reimbursements
 
     has_many :refunds, inverse_of: :reimbursement
-    has_many :return_items, inverse_of: :reimbursement
+    has_many :reimbursement_items, inverse_of: :reimbursement
 
     validates :order, presence: true
     validates :customer_return, presence: true
-    validate :validate_return_items_belong_to_same_order
+    validate :validate_reimbursement_items_belong_to_same_order
 
-    accepts_nested_attributes_for :return_items, allow_destroy: true
+    accepts_nested_attributes_for :reimbursement_items, allow_destroy: true
 
     before_create :generate_number
 
-    # The return_item_tax_calculator property should be set to an object that responds to "call"
-    # and accepts an array of ReturnItems. Invoking "call" should update the tax fields on the
-    # supplied ReturnItems.
+    # The reimbursement_item_tax_calculator property should be set to an object that responds to "call"
+    # and accepts an array of ReimbursementItems. Invoking "call" should update the tax fields on the
+    # supplied ReimbursementItems.
     # This allows a store to easily integrate with third party tax services.
-    class_attribute :return_item_tax_calculator
-    self.return_item_tax_calculator = ReturnItemTaxCalculator
+    class_attribute :reimbursement_item_tax_calculator
+    self.reimbursement_item_tax_calculator = ReimbursementItemTaxCalculator
     # A separate attribute here allows you to use a more performant calculator for estimates
     # and a different one (e.g. one that hits a 3rd party API) for the final caluclations.
-    class_attribute :return_item_simulator_tax_calculator
-    self.return_item_simulator_tax_calculator = ReturnItemTaxCalculator
+    class_attribute :reimbursement_item_simulator_tax_calculator
+    self.reimbursement_item_simulator_tax_calculator = ReimbursementItemTaxCalculator
 
     # The reimbursement_models property should contain an array of all models that provide
     # reimbursements.
@@ -66,11 +66,15 @@ module Spree
     end
 
     def display_total
-      Spree::Money.new(total, { currency: order.currency })
+      Spree::Money.new(total, { currency: currency })
+    end
+
+    def currency
+      order.currency
     end
 
     def calculated_total
-      return_items.to_a.sum(&:total)
+      reimbursement_items.to_a.sum(&:total)
     end
 
     def paid_amount
@@ -84,8 +88,8 @@ module Spree
     end
 
     def perform!
-      return_item_tax_calculator.call(
-        return_items.includes(inventory_unit: {line_item: :order}).to_a
+      reimbursement_item_tax_calculator.call(
+        reimbursement_items.includes(inventory_unit: {line_item: :order}).to_a
       )
       reload
       update!(total: calculated_total)
@@ -103,8 +107,8 @@ module Spree
     end
 
     def simulate
-      return_item_simulator_tax_calculator.call(
-        return_items.includes(inventory_unit: {line_item: :order}).to_a
+      reimbursement_item_simulator_tax_calculator.call(
+        reimbursement_items.includes(inventory_unit: {line_item: :order}).to_a
       )
       reload
       update!(total: calculated_total)
@@ -121,9 +125,9 @@ module Spree
       end
     end
 
-    def validate_return_items_belong_to_same_order
-      if return_items.any? { |ri| ri.inventory_unit.order_id != order_id }
-        errors.add(:base, :return_items_order_id_does_not_match)
+    def validate_reimbursement_items_belong_to_same_order
+      if reimbursement_items.any? { |ri| ri.inventory_unit.order_id != order_id }
+        errors.add(:base, :reimbursement_items_order_id_does_not_match)
       end
     end
 

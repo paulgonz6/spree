@@ -7,6 +7,7 @@ module Spree
     belongs_to :line_item, class_name: "Spree::LineItem", inverse_of: :inventory_units
 
     has_many :return_items, inverse_of: :inventory_unit
+    has_many :reimbursement_items, inverse_of: :inventory_unit
 
     scope :backordered, -> { where state: 'backordered' }
     scope :on_hand, -> { where state: 'on_hand' }

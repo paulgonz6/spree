@@ -7,12 +7,10 @@ module Spree
     belongs_to :inventory_unit, inverse_of: :return_items
     belongs_to :exchange_variant, class: 'Spree::Variant'
     belongs_to :customer_return, inverse_of: :return_items
-    belongs_to :reimbursement, inverse_of: :return_items
     belongs_to :override_reimbursement_type, foreign_key: :override_reimbursement_type_id, class_name: 'Spree::ReimbursementType'
     belongs_to :preferred_reimbursement_type, foreign_key: :preferred_reimbursement_type_id, class_name: 'Spree::ReimbursementType'
 
     validate :belongs_to_same_customer_order
-    validate :validate_acceptance_status_for_reimbursement
     validates :inventory_unit, presence: true, uniqueness: {scope: :return_authorization}
 
     scope :awaiting_return, -> { where(reception_status: 'awaiting') }
@@ -125,12 +123,6 @@ module Spree
 
     def validator
       @validator ||= return_eligibility_validator.new(self)
-    end
-
-    def validate_acceptance_status_for_reimbursement
-      if reimbursement && !accepted?
-        errors.add(:reimbursement, :cannot_be_associated_unless_accepted)
-      end
     end
   end
 end

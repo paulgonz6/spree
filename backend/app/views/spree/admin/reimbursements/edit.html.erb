@@ -24,16 +24,16 @@
         </tr>
       </thead>
       <tbody>
-        <%= f.fields_for :return_items, @reimbursement.return_items do |item_fields| %>
-          <% return_item = item_fields.object %>
+        <%= f.fields_for :reimbursement_items, @reimbursement.reimbursement_items do |item_fields| %>
+          <% reimbursement_item = item_fields.object %>
 
           <tr>
             <td>
-              <div class="variant-name"><%= return_item.inventory_unit.variant.name %></div>
-              <div class="variant-options"><%= return_item.inventory_unit.variant.options_text %></div>
+              <div class="variant-name"><%= reimbursement_item.inventory_unit.variant.name %></div>
+              <div class="variant-options"><%= reimbursement_item.inventory_unit.variant.options_text %></div>
             </td>
             <td class="align-center">
-              <%= reimbursement_type_name(return_item.preferred_reimbursement_type) %>
+              <%= reimbursement_type_name(reimbursement_item.preferred_reimbursement_type) %>
             </td>
             <td class='align-center'>
               <%= item_fields.select(
@@ -47,7 +47,7 @@
               <%= item_fields.text_field :pre_tax_amount, { class: 'refund-amount-input' } %>
             </td>
             <td class="align-center">
-              <%= return_item.display_total %>
+              <%= reimbursement_item.display_total %>
             </td>
           </tr>
 
