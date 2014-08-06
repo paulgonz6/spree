@@ -327,6 +327,7 @@ en:
   spree:
     abbreviation: Abbreviation
     accept: Accept
+    acceptance_status: Acceptance status
     accepted: Accepted
     account: Account
     account_updated: Account updated

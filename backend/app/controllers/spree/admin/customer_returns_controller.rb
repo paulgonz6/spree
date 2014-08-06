@@ -10,10 +10,10 @@ module Spree
       create.fails  :load_form_data
 
       def edit
-        @pending_return_items = @customer_return.return_items.pending
-        @accepted_return_items = @customer_return.return_items.accepted
-        @rejected_return_items = @customer_return.return_items.rejected
-        @manual_intervention_return_items = @customer_return.return_items.manual_intervention_required
+        @pending_return_items = @customer_return.return_items.select(&:pending?)
+        @accepted_return_items = @customer_return.return_items.select(&:accepted?)
+        @rejected_return_items = @customer_return.return_items.select(&:rejected?)
+        @manual_intervention_return_items = @customer_return.return_items.select(&:manual_intervention_required?)
         super
       end
 
@@ -41,31 +41,22 @@ module Spree
       end
 
       def load_form_data
-        return_items_by_rma_id = @order.inventory_units.map(&:current_or_new_return_item).group_by(&:return_authorization_id)
-        @new_return_items = filter_return_items_with_customer_returns(return_items_by_rma_id.delete(nil))
-        @rma_return_items = filter_return_items_with_customer_returns(return_items_by_rma_id.values.flatten)
-
-        @reimbursement_types = Spree::ReimbursementType.accessible_by(current_ability, :read).active
-
-        @allow_amount_edit = can?(:manage, Spree::CustomerReturn)
+        return_items = @order.inventory_units.map(&:current_or_new_return_item).reject(&:customer_return_id)
+        @rma_return_items, @new_return_items = return_items.partition(&:return_authorization_id)
       end
 
-      def customer_return_params
-        params.require('customer_return').permit(permitted_customer_return_attributes)
-      end
-
-      def filter_return_items_with_customer_returns(return_items)
-        return [] unless return_items
-        return_items.select { |return_item| return_item.customer_return.nil? }
+      def permitted_resource_params
+        @permitted_resource_params ||= params.require('customer_return').permit(permitted_customer_return_attributes)
       end
 
       def build_return_items_from_params
-        return_items_params = customer_return_params.delete(:return_items_attributes).values
+        debugger
+        return_items_params = permitted_resource_params.delete(:return_items_attributes).values
 
         @customer_return.return_items = return_items_params.map do |item_params|
           next unless item_params.delete('returned') == '1'
-          return_item = Spree::ReturnItem.find_or_initialize_by(id: item_params[:id])
-          return_item.assign_attributes(item_params)
+          return_item = item_params[:id] ? Spree::ReturnItem.find(item_params[:id]) : Spree::ReturnItem.new
+          return_item.attributes = item_params
           return_item
         end.compact
       end
