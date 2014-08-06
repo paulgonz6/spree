@@ -728,6 +728,7 @@ en:
     items_cannot_be_shipped: We are unable to calculate shipping rates for the selected items.
     items_in_rmas: Items in Return Authorizations
     items_to_be_reimbursed: Items to be reimbursed
+    items_reimbursed: Items reimbursed
     jirafe: Jirafe
     landing_page_rule:
       path: Path
@@ -953,6 +954,7 @@ en:
     populate_get_error: Something went wrong. Please try adding the item again.
     powered_by: Powered by
     pre_tax_refund_amount: Pre-Tax Refund Amount
+    pre_tax_amount: Pre-Tax Amount
     pre_tax_total: Pre-Tax Total
     preferred_reimbursement_type: Preferred Reimbursement Type
     presentation: Presentation
@@ -1048,6 +1050,7 @@ en:
     registration: Registration
     reimburse: Reimburse
     reimbursed: Reimbursed
+    reimbursement: Reimbursement
     reimbursement_perform_failed: "Reimbursement could not be performed.  Error: %{error}"
     reimbursement_status: Reimbursement status
     reimbursement_type: Reimbursement type

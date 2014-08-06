@@ -44,7 +44,7 @@
           </td>
           <td>
             <% if inventory_unit.shipped? && allow_return_item_changes %>
-              <%= item_fields.select :preferred_reimbursement_type_id, @reimbursement_types.collect{|r|[r.name, r.id]}, {include_blank: true}, {class: 'select2 fullwidth', "data-placeholder" => Spree.t(:select_a_reimbursement_type)} %>
+              <%= item_fields.select :preferred_reimbursement_type_id, @reimbursement_types.collect{|r|[r.name.humanize, r.id]}, {include_blank: true}, {class: 'select2 fullwidth', "data-placeholder" => Spree.t(:select_a_reimbursement_type)} %>
             <% end %>
           </td>
         </tr>

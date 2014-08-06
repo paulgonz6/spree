@@ -49,7 +49,6 @@ class Spree::Admin::ResourceController < Spree::Admin::BaseController
 
   def create
     invoke_callbacks(:create, :before)
-    debugger
     @object.attributes = permitted_resource_params
     if @object.save
       invoke_callbacks(:create, :after)

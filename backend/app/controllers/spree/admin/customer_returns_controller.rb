@@ -50,7 +50,6 @@ module Spree
       end
 
       def build_return_items_from_params
-        debugger
         return_items_params = permitted_resource_params.delete(:return_items_attributes).values
 
         @customer_return.return_items = return_items_params.map do |item_params|

@@ -8,7 +8,7 @@ module Spree
 
       def perform
         @reimbursement.perform!
-        redirect_to url_for([:admin, @order, @reimbursement.customer_return])
+        redirect_to location_after_save
       end
 
       private
@@ -21,7 +21,11 @@ module Spree
       end
 
       def location_after_save
-        edit_admin_order_reimbursement_path(@order, @reimbursement)
+        if @reimbursement.reimbursed?
+          admin_order_reimbursement_path(@order, @reimbursement)
+        else
+          edit_admin_order_reimbursement_path(@order, @reimbursement)
+        end
       end
 
       def load_simulated_refunds
