@@ -962,4 +962,21 @@ describe Spree::Order do
     end
   end
 
+  describe "#create_order_for_unreturned_exchange!" do
+    let(:order) { create(:completed_order_with_totals, user: create(:user)) }
+    it "creates a new order with the same user, bill address and ship address" do
+      exchange_order = order.create_order_for_unreturned_exchange!
+      exchange_order.bill_address_id.should be_present
+      exchange_order.bill_address_id.should == order.bill_address_id
+
+      exchange_order.ship_address_id.should be_present
+      exchange_order.ship_address_id.should == order.ship_address_id
+
+      exchange_order.user_id.should == order.user_id
+      exchange_order.user_id.should be_present
+      exchange_order.email.should == order.email
+      exchange_order.email.should be_present
+    end
+  end
+
 end

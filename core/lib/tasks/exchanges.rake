@@ -16,14 +16,8 @@ namespace :exchanges do
 
     unreturned_return_items.group_by(&:exchange_shipment).each do |shipment, return_items|
       begin
-        inventory_units = return_items.map(&:exchange_inventory_unit)
-
         original_order = shipment.order
-        order = Spree::Order.create!(bill_address: original_order.bill_address,
-                                    ship_address: original_order.ship_address,
-                                    email: original_order.email)
-
-        order.associate_user!(original_order.user) if original_order.user
+        order = original_order.create_order_for_unreturned_exchange!
 
         return_items.group_by(&:exchange_variant).map do |variant, variant_return_items|
           variant_inventory_units = variant_return_items.map(&:exchange_inventory_unit)

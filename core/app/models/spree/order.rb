@@ -598,6 +598,14 @@ module Spree
         payments.offset_payment.exists? # how old versions of spree stored refunds
     end
 
+    def create_order_for_unreturned_exchange!
+      order = Spree::Order.create!(bill_address: self.bill_address,
+                                  ship_address: self.ship_address,
+                                  email: self.email)
+      order.associate_user!(self.user) if self.user
+      order
+    end
+
     private
 
       def link_by_email
