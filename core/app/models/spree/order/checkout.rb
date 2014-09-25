@@ -97,6 +97,8 @@ module Spree
                 before_transition from: :delivery, do: :apply_free_shipping_promotions
               end
 
+              before_transition to: :confirm, do: :ensure_addresses_present
+
               after_transition to: :complete, do: :finalize!
               after_transition to: :resumed,  do: :after_resume
               after_transition to: :canceled, do: :after_cancel

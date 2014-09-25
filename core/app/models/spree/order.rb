@@ -615,6 +615,11 @@ module Spree
         end
       end
 
+      def ensure_addresses_present
+        errors.add(:base, Spree.t(:there_is_no_ship_address_for_this_order)) and return false unless ship_address_id.present?
+        errors.add(:base, Spree.t(:there_is_no_bill_address_for_this_order)) and return false unless bill_address_id.present?
+      end
+
       def has_available_shipment
         return unless has_step?("delivery")
         return unless address?
