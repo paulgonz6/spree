@@ -86,7 +86,7 @@ module Spree
               object_params[:payments_attributes].first[:amount] = @order.total.to_s
             end
           end
-          object_params
+          object_params.require(:order).permit(permitted_checkout_attributes)
         end
 
         def user_id
