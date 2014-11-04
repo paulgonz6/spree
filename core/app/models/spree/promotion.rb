@@ -157,7 +157,7 @@ module Spree
         !promotable.product.promotionable?
       when Spree::Order
         promotable.line_items.any? &&
-          !promotable.line_items.joins(:product).where(spree_products: {promotionable: true}).any?
+          promotable.line_items.joins(:product).where(spree_products: {promotionable: false}).any?
       end
     end
 
