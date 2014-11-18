@@ -621,6 +621,7 @@ en:
     dismiss_banner: No. Thanks! I'm not interested, do not display this message again
     display: Display
     display_currency: Display currency
+    doesnt_track_inventory: It doesnt track inventory
     edit: Edit
     editing_option_type: Editing Option Type
     editing_payment_method: Editing Payment Method
@@ -642,6 +643,7 @@ en:
     editing_tax_category: Editing Tax Category
     editing_tax_rate: Editing Tax Rate
     editing_tracker: Editing Tracker
+    editing_addresses: Editing Addresses
     editing_user: Editing User
     editing_zone: Editing Zone
     email: Email
@@ -867,6 +869,8 @@ en:
     no_results: No results
     no_rules_added: No rules added
     no_resource_found: ! 'No %{resource} found'
+    no_returns_found: No returns found
+    no_reimbursements_found: No reimbursements found
     no_shipping_methods_found: No shipping methods found
     no_shipping_method_selected: No shipping method selected.
     no_trackers_found: No Trackers Found
@@ -1015,7 +1019,7 @@ en:
     product_properties: Product Properties
     product_rule:
       choose_products: Choose products
-      label: Order must contain %{select} of these products
+      label: Order must contain x amount of these products
       match_all: all
       match_any: at least one
       match_none: none
@@ -1145,6 +1149,7 @@ en:
     rma_value: RMA Value
     roles: Roles
     rules: Rules
+    safe: Safe
     sales_total: Sales Total
     sales_total_description: Sales Total For All Orders
     sales_totals: Sales Totals
@@ -1168,7 +1173,7 @@ en:
     server: Server
     server_error: The server returned an error
     settings: Settings
-    ship: ship
+    ship: Ship
     ship_address: Ship Address
     ship_total: Ship Total
     shipment: Shipment
@@ -1273,6 +1278,11 @@ en:
     taxon: Taxon
     taxon_edit: Edit Taxon
     taxon_placeholder: Add a Taxon
+    taxon_rule:
+      choose_taxons: Choose taxons
+      label: Order must contain x amount of these taxons
+      match_all: all
+      match_any: at least one
     taxonomies: Taxonomies
     taxonomy: Taxonomy
     taxonomy_edit: Edit taxonomy

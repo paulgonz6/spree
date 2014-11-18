@@ -44,13 +44,18 @@ describe "Prototypes" do
   context "creating a prototype" do
     it "should allow an admin to create a new product prototype", :js => true do
       visit spree.admin_path
+
       click_link "Products"
       click_link "Prototypes"
+
       click_link "new_prototype_link"
-      within('#new_prototype') { page.should have_content("NEW PROTOTYPE") }
-      fill_in "prototype_name", :with => "male shirts"
+      within('#new_prototype') do
+        expect(page).to have_content("New Prototype")
+      end
+      fill_in "prototype_name", with: "male shirts"
       click_button "Create"
-      page.should have_content("successfully created!")
+      expect(page).to have_content("successfully created!")
+      click_link "Products"
       click_link "Prototypes"
       within_row(1) { click_icon :edit }
       fill_in "prototype_name", :with => "Shirt 99"

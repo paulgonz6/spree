@@ -12,11 +12,10 @@
 //= require jquery.powertip
 //= require jquery.vAlign
 //= require css_browser_selector_dev
-//= require spin
 //= require trunk8
-//= require jquery.adaptivemenu
 //= require equalize
 //= require responsive-tables
 //= require spree
 //= require spree/backend/spree-select2
+//= require bootstrap-sprockets
 //= require_tree .

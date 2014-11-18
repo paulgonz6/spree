@@ -25,5 +25,9 @@ Gem::Specification.new do |s|
   s.add_dependency 'jquery-ui-rails', '~> 4.1.0'
   s.add_dependency 'select2-rails', '~> 3.4.7'
 
+  s.add_dependency 'sprockets-rails', '~> 2.1.4'
+  s.add_dependency 'bootstrap-sass', '~> 3.3.1'
+
+
   s.add_development_dependency 'email_spec', '~> 1.2.1'
 end

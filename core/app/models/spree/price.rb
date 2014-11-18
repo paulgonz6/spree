@@ -6,10 +6,8 @@ module Spree
     validate :check_price
     validates :amount, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
 
-    def display_amount
-      money
-    end
-    alias :display_price :display_amount
+    extend DisplayMoney
+    money_methods :amount, :price
 
     def money
       Spree::Money.new(amount || 0, { currency: currency })
