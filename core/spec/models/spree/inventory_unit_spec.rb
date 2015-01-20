@@ -245,4 +245,25 @@ describe Spree::InventoryUnit do
       it { should eq false }
     end
   end
+
+  describe "#line_item_stock_locations" do
+
+    subject { inventory_unit.line_item_stock_locations(stock_location.id) }
+
+    let(:order) { create(:order_with_line_items, line_items_count: 2) }
+    let(:stock_location) { create(:stock_location) }
+    let!(:stock_location_2) { create(:stock_location) }
+    let(:line_item_1) { order.line_items.first }
+    let(:line_item_2) { order.line_items.last }
+    let(:inventory_unit) { line_item_1.inventory_units.first }
+
+    before do
+      line_item_1.line_item_stock_locations.create(stock_location_id: stock_location.id, quantity: line_item_1.quantity)
+      line_item_2.line_item_stock_locations.create(stock_location_id: stock_location_2.id, quantity: line_item_2.quantity)
+    end
+
+    it "returns line_item_stock_locations for the given stock location id" do
+      expect(subject.map(&:stock_location_id)).to eq([stock_location.id])
+    end
+  end
 end

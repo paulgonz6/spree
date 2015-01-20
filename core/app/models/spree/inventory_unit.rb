@@ -84,6 +84,14 @@ module Spree
       return_items.any?(&:exchange_requested?)
     end
 
+    def stock_locations_present?
+      line_item.line_item_stock_locations.present?
+    end
+
+    def line_item_stock_locations(stock_location_id)
+      line_item.line_item_stock_locations.where(stock_location_id: stock_location_id).uniq
+    end
+
     private
 
       def allow_ship?

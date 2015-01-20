@@ -23,8 +23,13 @@ describe "New Order" do
     expect(current_path).to eql(spree.edit_admin_order_customer_path(Spree::Order.last))
   end
 
-  it "completes new order succesfully withous using the cart", js: true do
+  it "completes new order succesfully without using the cart", js: true do
     select2_search product.name, :from => Spree.t(:name_or_sku)
+
+    within("table.stock-levels") do
+      fill_in "quantity_0", :with => 2
+    end
+
     click_icon :plus
     wait_for_ajax
     click_on "Customer Details"
@@ -62,9 +67,11 @@ describe "New Order" do
       select2_search product.name, :from => Spree.t(:name_or_sku)
 
       within("table.stock-levels") do
-        fill_in "variant_quantity", :with => 2
-        click_icon :plus
+        fill_in "quantity_0", :with => 2
       end
+
+      click_icon :plus
+      wait_for_ajax
 
       within(".line-items") do
         page.should have_content(product.name)
@@ -96,7 +103,14 @@ describe "New Order" do
 
     it "can still see line items" do
       select2_search product.name, :from => Spree.t(:name_or_sku)
+
+      within("table.stock-levels") do
+        fill_in "quantity_0", :with => 1
+      end
+
       click_icon :plus
+      wait_for_ajax
+
       within(".line-items") do
         within(".line-item-name") do
           page.should have_content(product.name)
