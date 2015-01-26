@@ -12,16 +12,33 @@ module Spree
       end
 
       def adjust(package)
-        if fulfilled?
-          package.remove(inventory_unit)
-        else
+        if fulfilled?  || (is_preferred?(package) && is_fulfillable_at_preference(package))
           self.fulfilled = true
+        else
+          package.remove(inventory_unit)
         end
       end
 
       def fulfilled?
         fulfilled
       end
+
+      # def is_preferred?(package)
+      #   inventory_unit.line_item.stock_locations.include?(package.stock_location)
+      # end
+      #
+      # def is_fulfillable_at_preference?(package)
+      #   inventory_unit.line_item_stock_locations(package.stock_location).sum(:quantity) > 0
+      # end
+      #
+      def is_preferred?(package)
+        inventory_unit.line_item.stock_locations.include?(package.stock_location)
+      end
+
+      def is_fulfillable_at_preference?(package)
+        inventory_unit.line_item_stock_locations(package.stock_location).sum(:quantity) > 0
+      end
+
     end
   end
 end

@@ -31,10 +31,10 @@ module Spree
       #
       # Returns an array of Package instances
       def build_packages(packages = Array.new)
-        stock_locations.each do |stock_location|
+        StockLocation.find_each do |stock_location|
           next unless stock_location.stock_items.where(:variant_id => inventory_units.map(&:variant_id)).exists?
 
-          packer = build_packer(stock_location, inventory_units_for_stock_location(stock_location))
+          packer = build_packer(stock_location, inventory_units)
           packages += packer.packages
         end
         packages
@@ -63,10 +63,10 @@ module Spree
         Rails.application.config.spree.stock_splitters
       end
 
-      def stock_locations
-        preferred_stock_locations = @inventory_units.flat_map(&:line_item).uniq.map(&:stock_locations).flatten.uniq
-        preferred_stock_locations.present? ? preferred_stock_locations : StockLocation.active
-      end
+      # def stock_locations
+      #   preferred_stock_locations = @inventory_units.flat_map(&:line_item).uniq.map(&:stock_locations).flatten.uniq
+      #   preferred_stock_locations.present? ? preferred_stock_locations : StockLocation.active
+      # end
 
       def inventory_units_for_stock_location(stock_location)
         return inventory_units unless inventory_units.any? {|iu| iu.stock_locations_present? }
