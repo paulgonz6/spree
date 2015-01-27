@@ -21,8 +21,8 @@ module Spree
         def update
           if @order.contents.update_cart(order_params)
             if params[:guest_checkout] == "false"
-              requsted_user = Spree.user_class.find(params[:user_id])
-              @order.contents.associate_user(requsted_user, @order.email.blank?)
+              requested_user = Spree.user_class.find(params[:user_id])
+              @order.contents.associate_user(requested_user, @order.email.blank?)
             end
             @order.next
             @order.refresh_shipment_rates
