@@ -19,12 +19,13 @@ module Spree
         end
 
         def update
-          if @order.update_attributes(order_params)
+          if @order.contents.update_cart(order_params)
             if params[:guest_checkout] == "false"
-              @order.associate_user!(Spree.user_class.find(params[:user_id]), @order.email.blank?)
+              requsted_user = Spree.user_class.find(params[:user_id])
+              @order.contents.associate_user(requsted_user, @order.email.blank?)
             end
             @order.next
-            @order.refresh_shipment_rates(ShippingMethod::DISPLAY_ON_FRONT_AND_BACK_END)
+            @order.refresh_shipment_rates
             flash[:success] = Spree.t('customer_details_updated')
             redirect_to edit_admin_order_url(@order)
           else
@@ -44,7 +45,7 @@ module Spree
           end
 
           def load_order
-            @order = Order.includes(:adjustments).friendly.find(params[:order_id])
+            @order = Order.includes(:adjustments).find_by_number!(params[:order_id])
           end
 
           def model_class
