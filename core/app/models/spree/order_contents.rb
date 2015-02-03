@@ -7,13 +7,20 @@ module Spree
     end
 
     def add(variant, quantity = 1, currency = nil, shipment = nil, stock_location_quantities: nil)
-      line_item = add_to_line_item(variant, quantity, currency, shipment, stock_location_quantities: stock_location_quantities)
-      reload_totals
-      shipment.present? ? shipment.update_amounts : order.ensure_updated_shipments
-      PromotionHandler::Cart.new(order, line_item).activate
-      ItemAdjustments.new(line_item).update
-      reload_totals
-      line_item
+      new_variant_price = currency ? variant.amount_in(currency) : variant.price
+      order.line_items.where(variant: variant).first_or_initialize(quantity: 0, price: new_variant_price).tap do |line_item|
+        line_item.quantity += quantity.to_i
+        line_item.target_shipment = shipment
+        line_item = currency if currency
+        create_order_stock_locations(line_item, stock_location_quantities)
+        line_item.save!
+
+        reload_totals
+        shipment.present? ? shipment.update_amounts : order.ensure_updated_shipments
+        PromotionHandler::Cart.new(order, line_item).activate
+        ItemAdjustments.new(line_item).update
+        reload_totals
+      end
     end
 
     def remove(variant, quantity = 1, shipment = nil)
@@ -126,29 +133,6 @@ module Spree
         order.reload
       end
 
-      def add_to_line_item(variant, quantity, currency=nil, shipment=nil, stock_location_quantities: nil)
-        line_item = grab_line_item_by_variant(variant)
-
-        if line_item
-          line_item.target_shipment = shipment
-          line_item.quantity += quantity.to_i
-          line_item.currency = currency unless currency.nil?
-        else
-          line_item = order.line_items.new(quantity: quantity, variant: variant)
-          create_order_stock_locations(line_item, stock_location_quantities)
-          line_item.target_shipment = shipment
-          if currency
-            line_item.currency = currency
-            line_item.price    = variant.price_in(currency).amount
-          else
-            line_item.price    = variant.price
-          end
-        end
-
-        line_item.save!
-        line_item
-      end
-
       def remove_from_line_item(variant, quantity, shipment=nil)
         line_item = grab_line_item_by_variant(variant, true)
         line_item.quantity += -quantity
@@ -175,9 +159,14 @@ module Spree
 
       def create_order_stock_locations(line_item, stock_location_quantities)
         return unless stock_location_quantities.present?
-        order = line_item.order
+
         stock_location_quantities.each do |stock_location_id, quantity|
-          order.order_stock_locations.create!(stock_location_id: stock_location_id, quantity: quantity, variant_id: line_item.variant_id) unless quantity.to_i.zero?
+          next if quantity.to_i.zero?
+          order.order_stock_locations.create!(
+            stock_location_id: stock_location_id, 
+            quantity: quantity, 
+            variant_id: line_item.variant_id
+          )
         end
       end
   end
