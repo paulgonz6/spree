@@ -22,16 +22,7 @@ module Spree
 
       def create
         invoke_callbacks(:create, :before)
-        @payment ||= @order.contents.add_payment(object_params)
-
-        # TODO figure out where this is supposed to live, it doesn't really
-        # fit nicely in order contents since it's based on this funky param,
-        # but is weird here as well
-        #
-        # - AT 02/02/2015
-        if params[:card].present? && params[:card] != 'new'
-          @payment.source = @payment.payment_method.payment_source_class.find_by_id(params[:card])
-        end
+        @payment ||= @order.contents.add_payment(object_params, card_id: card_id)
 
         begin
           if @payment.save
@@ -76,11 +67,24 @@ module Spree
       private
 
       def object_params
-        if params[:payment] and params[:payment_source] and source_params = params.delete(:payment_source)[params[:payment][:payment_method_id]]
-          params[:payment][:source_attributes] = source_params
+        payment_method_id = params[:payment][:payment_method_id]
+        payment_source_params = params[:payment_source][payment_method_id]
+
+        contents_hash = ActionController::Parameters.new({
+          payment: {
+            amount: params[:payment][:amount],
+            payment_method_id: payment_method_id,
+            source_attributes: payment_source_params
+          }
+        })
+
+        contents_hash = contents_hash.require(:payment).permit(permitted_payment_attributes)
+      end
+
+      def card_id
+        if params[:card].present? && params[:card] != 'new'
+          params[:card]
         end
-        
-        params.require(:payment).permit(permitted_payment_attributes)
       end
 
       def load_data
