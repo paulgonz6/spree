@@ -15,11 +15,12 @@ module Spree
         create_order_stock_locations(line_item, stock_location_quantities)
         line_item.save!
 
-        reload_totals
-        shipment.present? ? shipment.update_amounts : order.ensure_updated_shipments
-        PromotionHandler::Cart.new(order, line_item).activate
-        ItemAdjustments.new(line_item).update
-        reload_totals
+        update
+        # reload_totals
+        # shipment.present? ? shipment.update_amounts : order.ensure_updated_shipments
+        # PromotionHandler::Cart.new(order, line_item).activate
+        # ItemAdjustments.new(line_item).update
+        # reload_totals
       end
     end
 
@@ -123,6 +124,12 @@ module Spree
     end
 
     private
+
+      def update
+        OrderUpdater.new(order).update
+        #order.reload
+      end
+
       def order_updater
         @updater ||= OrderUpdater.new(order)
       end
@@ -163,8 +170,8 @@ module Spree
         stock_location_quantities.each do |stock_location_id, quantity|
           next if quantity.to_i.zero?
           order.order_stock_locations.create!(
-            stock_location_id: stock_location_id, 
-            quantity: quantity, 
+            stock_location_id: stock_location_id,
+            quantity: quantity,
             variant_id: line_item.variant_id
           )
         end

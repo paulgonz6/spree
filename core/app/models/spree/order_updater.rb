@@ -34,6 +34,10 @@ module Spree
       update_hooks.each { |hook| order.send hook }
     end
 
+    def active_cart_promotions
+      order.line_items.each { |li| PromotionHandler::Cart.new(order, li).activate }
+    end
+
     def recalculate_adjustments
       all_adjustments.includes(:adjustable).map(&:adjustable).uniq.each { |adjustable| Spree::ItemAdjustments.new(adjustable).update }
     end
@@ -47,6 +51,7 @@ module Spree
     # +total+              The so-called "order total."  This is equivalent to +item_total+ plus +adjustment_total+.
     def update_totals
       order.payment_total = payments.completed.sum(:amount)
+      update_item_count
       update_item_total
       update_shipment_total
       update_adjustment_total
