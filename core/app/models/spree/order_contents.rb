@@ -115,10 +115,10 @@ module Spree
       PromotionHandler::Coupon.new(order).apply
     end
 
-    def add_payment(payment_params = {}, card_id: nil)
-      payment = order.payments.build(payment_params)
-      payment.source = payment_method.payment_source_class.find_by_id(card_id) if card_id
-      payment
+    def add_payment(payment_params = {}, source_id: nil, payment: nil)
+      payment ||= order.payments.build(payment_params)
+      payment.source = payment_method.payment_source_class.find_by_id(source_id) if source_id
+      payment.tap(&:save)
     end
 
     def process_payments(payments: [])

@@ -21,11 +21,14 @@ module Spree
       end
 
       def create
-        invoke_callbacks(:create, :before)
-        @payment ||= @order.contents.add_payment(object_params, card_id: card_id)
-
+        invoke_callbacks(:create, :before) # this may set @payment
+        @payment = @order.contents.add_payment(object_params, source_id: card_id, payment: @payment)
         begin
-          if @payment.save
+          if @payment.errors.any?
+            invoke_callbacks(:create, :fails)
+            flash[:error] = Spree.t(:payment_could_not_be_created)
+            render :new
+          else
             invoke_callbacks(:create, :after)
 
             if @order.completed? && @payment.checkout?
@@ -36,10 +39,6 @@ module Spree
 
             flash[:success] = flash_message_for(@payment, :successfully_created)
             redirect_to admin_order_payments_path(@order)
-          else
-            invoke_callbacks(:create, :fails)
-            flash[:error] = Spree.t(:payment_could_not_be_created)
-            render :new
           end
         rescue Spree::Core::GatewayError => e
           invoke_callbacks(:create, :fails)
@@ -67,18 +66,11 @@ module Spree
       private
 
       def object_params
-        payment_method_id = params[:payment][:payment_method_id]
-        payment_source_params = params[:payment_source][payment_method_id]
+        if params[:payment] and params[:payment_source] and source_params = params.delete(:payment_source)[params[:payment][:payment_method_id]]
+          params[:payment][:source_attributes] = source_params
+        end
 
-        contents_hash = ActionController::Parameters.new({
-          payment: {
-            amount: params[:payment][:amount],
-            payment_method_id: payment_method_id,
-            source_attributes: payment_source_params
-          }
-        })
-
-        contents_hash = contents_hash.require(:payment).permit(permitted_payment_attributes)
+        params.require(:payment).permit(permitted_payment_attributes)
       end
 
       def card_id
