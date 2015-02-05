@@ -319,7 +319,7 @@ module Spree
 
       updater.update_shipment_state
       save
-      updater.run_hooks
+      update_hooks.each { |hook| public_send hook }
 
       touch :completed_at
 
