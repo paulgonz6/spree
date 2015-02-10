@@ -2,7 +2,7 @@ module Spree
   module Stock
     class AvailabilityValidator < ActiveModel::Validator
       def validate(line_item)
-        quantifier = Stock::Quantifier.new(line_item.variant)
+        quantifier = Stock::Quantifier.new(line_item.variant, line_item.order_stock_locations_for_variant)
 
         unless quantifier.can_supply? line_item.quantity
           variant = line_item.variant

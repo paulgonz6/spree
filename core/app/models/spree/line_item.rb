@@ -79,11 +79,15 @@ module Spree
     end
 
     def sufficient_stock?
-      Stock::Quantifier.new(variant).can_supply? quantity
+      Stock::Quantifier.new(variant, order_stock_locations_for_variant).can_supply? quantity
     end
 
     def insufficient_stock?
       !sufficient_stock?
+    end
+
+    def order_stock_locations_for_variant
+      order.order_stock_locations.where(variant_id: variant_id)
     end
 
     def assign_stock_changes_to=(shipment)

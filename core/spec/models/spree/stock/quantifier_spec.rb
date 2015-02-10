@@ -97,6 +97,43 @@ module Spree
 
       end
 
+      context 'with order stock locations specified' do
+        let(:order) { create :order }
+        let!(:stock_location_2) { create :stock_location }
+        let!(:stock_location_3) { create :stock_location, active: false }
+        let!(:order_stock_location_1) { Spree::OrderStockLocation.create!(stock_location: stock_location, variant: stock_item.variant, quantity: 5, order: order) }
+        let!(:order_stock_location_2) { Spree::OrderStockLocation.create!(stock_location: stock_location_3, variant: stock_item.variant, quantity: 3, order: order) }
+
+        before do
+          stock_location_2.stock_items.where(variant_id: stock_item.variant).update_all(count_on_hand: 5, backorderable: false)
+          stock_location_3.stock_items.where(variant_id: stock_item.variant).update_all(count_on_hand: 3, backorderable: false)
+        end
+
+         subject { described_class.new(stock_item.variant, Spree::OrderStockLocation.where(order: order, variant: stock_item.variant)) }
+
+        it 'total_on_hand should total all stock_items in configured locations' do
+          subject.total_on_hand.should == 13
+        end
+
+        context 'when any stock item allows backordering' do
+          specify { subject.backorderable?.should be true }
+
+          it_should_behave_like 'unlimited supply'
+        end
+
+        context 'when all stock items prevent backordering' do
+          before { stock_item.update_attributes(backorderable: false) }
+
+          specify { subject.backorderable?.should be false }
+
+          it 'can_supply? upto total_on_hand' do
+            subject.can_supply?(1).should be true
+            subject.can_supply?(13).should be true
+            subject.can_supply?(15).should be false
+          end
+        end
+      end
+
     end
   end
 end
