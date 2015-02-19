@@ -8,7 +8,7 @@ module Spree
         let(:promotion) { create(:promotion) }
         let(:action) { CreateItemAdjustments.new }
         let!(:line_item) { create(:line_item, :order => order) }
-        let(:payload) { { order: order, promotion: promotion } }
+        let(:payload) { { order: order, promotion: promotion, promotion_code: promotion.codes.first } }
 
         before { action.stub(:promotion => promotion) }
 

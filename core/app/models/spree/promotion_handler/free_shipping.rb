@@ -11,7 +11,7 @@ module Spree
 
       def activate
         promotions.each do |promotion|
-          if promotion.eligible?(order)
+          if promotion.eligible?(order, nil)
             promotion.activate(order: order)
           end
         end
@@ -20,11 +20,12 @@ module Spree
       private
 
         def promotions
-          Spree::Promotion.active.where({
-            :id => Spree::Promotion::Actions::FreeShipping.pluck(:promotion_id),
-            :code => nil,
-            :path => nil
-          })
+          Spree::Promotion.
+            joins('LEFT JOIN "spree_promotion_codes" on "spree_promotions"."id" = "spree_promotion_codes"."promotion_id"').where({
+              id: Spree::Promotion::Actions::FreeShipping.pluck(:promotion_id),
+              spree_promotion_codes: {id: nil},
+              path: nil
+            })
         end
     end
   end

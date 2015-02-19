@@ -133,8 +133,8 @@ module Spree
         promo_sequences.each do |promo_sequence|
           it "should pick the best order-level promo according to current eligibility" do
             # apply both promos to the order, even though only promo1 is eligible
-            order_promos[promo_sequence[0]].activate order: order
-            order_promos[promo_sequence[1]].activate order: order
+            order_promos[promo_sequence[0]].activate order: order, promotion_code: order_promos[promo_sequence[0]].codes.first
+            order_promos[promo_sequence[1]].activate order: order, promotion_code: order_promos[promo_sequence[1]].codes.first
 
             order.reload
             order.all_adjustments.count.should eq(2), "Expected two adjustments (using sequence #{promo_sequence})"
@@ -154,8 +154,8 @@ module Spree
         promo_sequences.each do |promo_sequence|
           it "should pick the best line-item-level promo according to current eligibility" do
             # apply both promos to the order, even though only promo1 is eligible
-            line_item_promos[promo_sequence[0]].activate order: order
-            line_item_promos[promo_sequence[1]].activate order: order
+            line_item_promos[promo_sequence[0]].activate order: order, promotion_code: line_item_promos[promo_sequence[0]].codes.first
+            line_item_promos[promo_sequence[1]].activate order: order, promotion_code: line_item_promos[promo_sequence[1]].codes.first
 
             order.reload
             order.all_adjustments.count.should eq(1), "Expected one adjustment (using sequence #{promo_sequence})"

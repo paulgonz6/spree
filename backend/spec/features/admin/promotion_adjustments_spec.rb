@@ -12,7 +12,8 @@ describe "Promotion Adjustments" do
 
     it "should allow an admin to create a flat rate discount coupon promo" do
       fill_in "Name", :with => "Promotion"
-      fill_in "Code", :with => "order"
+      fill_in "promotion_base_code", :with => "order"
+      fill_in "promotion_number_of_codes", :with => "1"
       click_button "Create"
       page.should have_content("Editing Promotion")
 
@@ -31,7 +32,7 @@ describe "Promotion Adjustments" do
       within('#actions_container') { click_button "Update" }
 
       promotion = Spree::Promotion.find_by_name("Promotion")
-      promotion.code.should == "order"
+      promotion.codes.first.value.should == "order"
 
       first_rule = promotion.rules.first
       first_rule.class.should == Spree::Promotion::Rules::ItemTotal
@@ -47,7 +48,8 @@ describe "Promotion Adjustments" do
     it "should allow an admin to create a single user coupon promo with flat rate discount" do
       fill_in "Name", :with => "Promotion"
       fill_in "Usage Limit", :with => "1"
-      fill_in "Code", :with => "single_use"
+      fill_in "promotion_base_code", :with => "single_use"
+      fill_in "promotion_number_of_codes", :with => "1"
       click_button "Create"
       page.should have_content("Editing Promotion")
 
@@ -60,7 +62,7 @@ describe "Promotion Adjustments" do
 
       promotion = Spree::Promotion.find_by_name("Promotion")
       promotion.usage_limit.should == 1
-      promotion.code.should == "single_use"
+      promotion.codes.first.value.should == "single_use"
 
       first_action = promotion.actions.first
       first_action.class.should == Spree::Promotion::Actions::CreateAdjustment
@@ -189,7 +191,8 @@ describe "Promotion Adjustments" do
     it "should allow an admin to create a promotion that adds a 'free' item to the cart" do
       create(:product, :name => "RoR Mug")
       fill_in "Name", :with => "Promotion"
-      fill_in "Code", :with => "complex"
+      fill_in "promotion_base_code", :with => "complex"
+      fill_in "promotion_number_of_codes", :with => "1"
       click_button "Create"
       page.should have_content("Editing Promotion")
 
@@ -211,7 +214,7 @@ describe "Promotion Adjustments" do
       within('#actions_container') { click_button "Update" }
 
       promotion = Spree::Promotion.find_by_name("Promotion")
-      promotion.code.should == "complex"
+      promotion.codes.first.value.should == "complex"
 
       first_action = promotion.actions.first
       first_action.class.should == Spree::Promotion::Actions::CreateLineItems

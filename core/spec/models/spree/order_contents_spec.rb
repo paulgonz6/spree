@@ -65,7 +65,7 @@ describe Spree::OrderContents do
     end
 
     context "running promotions" do
-      let(:promotion) { create(:promotion) }
+      let(:promotion) { Spree::Promotion.create(name: "A promotion") }
       let(:calculator) { Spree::Calculator::FlatRate.new(:preferred_amount => 10) }
 
       shared_context "discount changes order total" do
@@ -376,10 +376,12 @@ describe Spree::OrderContents do
 
   describe "#apply_coupon_code" do
     let(:order) { create(:order_with_line_items) }
-    let(:promo) { create(:promotion_with_item_adjustment, code: 'abc') }
+    let(:promo) { create(:promotion_with_item_adjustment) }
+
+    before { promo.codes.create(value: 'abc') }
 
     it "applies the promo and returns the handler" do
-      result = order.contents.apply_coupon_code(promo.code)
+      result = order.contents.apply_coupon_code(promo.codes.first.value)
       expect(order.reload.promotions).to eq [promo]
       expect(result).to be_a Spree::PromotionHandler::Coupon
     end

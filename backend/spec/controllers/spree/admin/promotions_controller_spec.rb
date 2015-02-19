@@ -3,9 +3,14 @@ require 'spec_helper'
 describe Spree::Admin::PromotionsController do
   stub_authorization!
 
-  let!(:promotion1) { create(:promotion, name: "name1", code: "code1", path: "path1") }
-  let!(:promotion2) { create(:promotion, name: "name2", code: "code2", path: "path2") }
+  let!(:promotion1) { create(:promotion, name: "name1", path: "path1") }
+  let!(:promotion2) { create(:promotion, name: "name2", path: "path2") }
   let!(:category) { create :promotion_category }
+
+  before do
+    promotion1.codes.create(value: 'code1')
+    promotion2.codes.create(value: 'code2')
+  end
 
   context "#index" do
 
@@ -31,7 +36,7 @@ describe Spree::Admin::PromotionsController do
       end
 
       it "filters by code" do
-        spree_get :index, q: {code_cont: promotion1.code}
+        spree_get :index, q: {promotion_codes_value_cont: "code1"}
         expect(assigns[:promotions].map(&:id)).to eq [promotion1.id]
       end
 

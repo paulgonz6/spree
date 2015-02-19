@@ -22,15 +22,17 @@ module Spree
 
       def activate
         promotions.each do |promotion|
-          if (line_item && promotion.eligible?(line_item)) || promotion.eligible?(order)
-            promotion.activate(line_item: line_item, order: order)
+          if (line_item && promotion.eligible?(line_item, promotion_code(promotion).try(:value))) || promotion.eligible?(order, promotion_code(promotion).try(:value))
+            promotion.activate(line_item: line_item, order: order, promotion_code: promotion_code(promotion))
           end
         end
       end
 
       private
+
         def promotions
           promo_table = Promotion.arel_table
+          code_table  = PromotionCode.arel_table
           join_table = Arel::Table.new(:spree_orders_promotions)
 
           join_condition = promo_table.join(join_table, Arel::Nodes::OuterJoin).on(
@@ -38,12 +40,18 @@ module Spree
           ).join_sources
 
           Promotion.active.includes(:promotion_rules).
+            joins('LEFT JOIN "spree_promotion_codes" on "spree_promotions"."id" = "spree_promotion_codes"."promotion_id"').
             joins(join_condition).
             where(
-              promo_table[:code].eq(nil).and(
+              code_table[:value].eq(nil).and(
                 promo_table[:path].eq(nil)
               ).or(join_table[:order_id].eq(order.id))
             ).distinct
+        end
+
+        def promotion_code(promotion)
+          order_promotion = Spree::OrderPromotion.where(order: order, promotion: promotion).first
+          order_promotion.present? ? order_promotion.promotion_code : nil
         end
     end
   end

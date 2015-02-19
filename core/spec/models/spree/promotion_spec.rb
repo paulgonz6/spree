@@ -14,14 +14,6 @@ describe Spree::Promotion do
       @valid_promotion.should be_valid
     end
 
-    it "validates usage limit" do
-      @valid_promotion.usage_limit = -1
-      @valid_promotion.should_not be_valid
-
-      @valid_promotion.usage_limit = 100
-      @valid_promotion.should be_valid
-    end
-
     it "validates name" do
       @valid_promotion.name = nil
       @valid_promotion.should_not be_valid
@@ -66,7 +58,7 @@ describe Spree::Promotion do
 
       @user = stub_model(Spree::LegacyUser, :email => "spree@example.com")
       @order = create(:order)
-      @payload = { :order => @order, :user => @user }
+      @payload = { :order => @order, :user => @user, :promotion_code => promotion.codes.first }
     end
 
     it "should check path if present" do
@@ -117,23 +109,6 @@ describe Spree::Promotion do
 
   end
 
-  context "#usage_limit_exceeded" do
-    let(:promotable) { double('Promotable') }
-    it "should not have its usage limit exceeded with no usage limit" do
-      promotion.usage_limit = 0
-      promotion.usage_limit_exceeded?(promotable).should be false
-    end
-
-    it "should have its usage limit exceeded" do
-      promotion.usage_limit = 2
-      promotion.stub(:adjusted_credits_count => 2)
-      promotion.usage_limit_exceeded?(promotable).should be true
-
-      promotion.stub(:adjusted_credits_count => 3)
-      promotion.usage_limit_exceeded?(promotable).should be true
-    end
-  end
-
   context "#expired" do
     it "should not be exipired" do
       promotion.should_not be_expired
@@ -172,7 +147,7 @@ describe Spree::Promotion do
     end
   end
 
-  context "#credits_count" do
+  context "#usage_count" do
     let!(:promotion) do
       promotion = Spree::Promotion.new
       promotion.name = "Foo"
@@ -199,19 +174,19 @@ describe Spree::Promotion do
 
     it "counts eligible adjustments" do
       adjustment.update_column(:eligible, true)
-      expect(promotion.credits_count).to eq(1)
+      expect(promotion.usage_count).to eq(1)
     end
 
     # Regression test for #4112
     it "does not count ineligible adjustments" do
       adjustment.update_column(:eligible, false)
-      expect(promotion.credits_count).to eq(0)
+      expect(promotion.usage_count).to eq(0)
     end
   end
 
   context "#eligible?" do
     let(:promotable) { create :order }
-    subject { promotion.eligible?(promotable) }
+    subject { promotion.eligible?(promotable, promotion.codes.first.value) }
     context "when promotion is expired" do
       before { promotion.expires_at = Time.now - 10.days }
       it { should be false }
@@ -310,8 +285,8 @@ describe Spree::Promotion do
   end
 
   describe '#line_item_actionable?' do
-    let(:order) { double Spree::Order }
-    let(:line_item) { double Spree::LineItem}
+    let(:order) { create(:order) }
+    let(:line_item) { order.line_items.first }
     let(:true_rule) { double Spree::PromotionRule, eligible?: true, applicable?: true, actionable?: true }
     let(:false_rule) { double Spree::PromotionRule, eligible?: true, applicable?: true, actionable?: false }
     let(:rules) { [] }
@@ -321,7 +296,7 @@ describe Spree::Promotion do
       rules.stub(:for) { rules }
     end
 
-    subject { promotion.line_item_actionable? order, line_item }
+    subject { promotion.line_item_actionable? order, line_item, promotion.codes.first }
 
     context 'when the order is eligible for promotion' do
       context 'when there are no rules' do
@@ -365,20 +340,11 @@ describe Spree::Promotion do
       end
   end
 
-  # regression for #4059
-  # admin form posts the code and path as empty string
-  describe "normalize blank values for code & path" do
-    it "will save blank value as nil value instead" do
-      promotion = Spree::Promotion.create(:name => "A promotion", :code => "", :path => "")
-      expect(promotion.code).to be_nil
-      expect(promotion.path).to be_nil
-    end
-  end
-
   # Regression test for #4081
   describe "#with_coupon_code" do
     context "and code stored in uppercase" do
       let!(:promotion) { create(:promotion, :code => "MY-COUPON-123") }
+
       it "finds the code with lowercase" do
         expect(Spree::Promotion.with_coupon_code("my-coupon-123")).to eql promotion
       end
@@ -431,7 +397,7 @@ describe Spree::Promotion do
       expect(line_item.adjustments).to be_empty
       expect(order.adjustment_total).to eq 0
 
-      promo.activate order: order
+      promo.activate order: order, promotion_code: promo.codes.first
       order.update!
 
       expect(line_item.adjustments).to have(1).item

@@ -4,7 +4,7 @@ describe Spree::Promotion::Actions::CreateAdjustment do
   let(:order) { create(:order_with_line_items, :line_items_count => 1) }
   let(:promotion) { create(:promotion) }
   let(:action) { Spree::Promotion::Actions::CreateAdjustment.new }
-  let(:payload) { { order: order } }
+  let(:payload) { { order: order, promotion_code: promotion.codes.first } }
 
   # From promotion spec:
   context "#perform" do
@@ -18,7 +18,7 @@ describe Spree::Promotion::Actions::CreateAdjustment do
     it "does not apply an adjustment if the amount is 0" do
       action.calculator.preferred_amount = 0
       action.perform(payload)
-      promotion.credits_count.should == 0
+      promotion.usage_count.should == 0
       order.adjustments.count.should == 0
     end
 
@@ -26,7 +26,7 @@ describe Spree::Promotion::Actions::CreateAdjustment do
       order.shipments.create!(:cost => 10)
 
       action.perform(payload)
-      promotion.credits_count.should == 1
+      promotion.usage_count.should == 1
       order.adjustments.count.should == 1
       order.adjustments.first.amount.to_i.should == -10
     end
@@ -42,7 +42,7 @@ describe Spree::Promotion::Actions::CreateAdjustment do
 
       action.perform(payload)
       action.perform(payload)
-      promotion.credits_count.should == 1
+      promotion.usage_count.should == 1
     end
   end
 

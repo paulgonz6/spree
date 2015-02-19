@@ -18,8 +18,10 @@ module Spree
     has_many :orders, through: :order_promotions
 
     accepts_nested_attributes_for :promotion_actions, :promotion_rules
+    accepts_nested_attributes_for :promotion_codes, allow_destroy: true
 
     validates_associated :rules
+    validates_associated :promotion_codes
 
     validates :name, presence: true
     validates :path, uniqueness: true, allow_blank: true
@@ -33,7 +35,9 @@ module Spree
     end
 
     def self.with_coupon_code(coupon_code)
-      where("lower(#{quoted_table_name}.code) = ?", coupon_code.strip.downcase).first
+      joins(:promotion_codes).where(
+        Spree::PromotionCode.arel_table[:value].matches(coupon_code.strip)
+      ).first
     end
 
     def self.active
@@ -47,6 +51,10 @@ module Spree
 
     def expired?
       !!(starts_at && Time.now < starts_at || expires_at && Time.now > expires_at)
+    end
+
+    def promotion_code(coupon_code)
+      codes.where(Spree::PromotionCode.arel_table[:value].matches("%#{coupon_code}")).first
     end
 
     def activate(payload)
@@ -69,8 +77,10 @@ module Spree
     end
 
     # called anytime order.update! happens
-    def eligible?(promotable)
-      return false if expired? || usage_limit_exceeded?(promotable) || blacklisted?(promotable)
+    def eligible?(promotable, coupon_code = nil)
+      return false if expired? ||
+                        blacklisted?(promotable) ||
+                        usage_limit_exceeded?(promotable, coupon_code)
       !!eligible_rules(promotable, {})
     end
 
@@ -95,28 +105,24 @@ module Spree
       end
     end
 
-    def usage_limit_exceeded?(promotable)
-      usage_limit.present? && usage_limit > 0 && adjusted_credits_count(promotable) >= usage_limit
+    def usage_limit_exceeded?(promotable, coupon_code)
+      if coupon_code.present?
+        promotion_code(coupon_code).usage_limit_exceeded?(promotable)
+      else
+        usage_limit.present? && usage_limit.to_i > 0 && (usage_count - usage_count_for_promotable(promotable)) >= usage_limit
+      end
     end
 
-    def adjusted_credits_count(promotable)
-      credits_count - promotable.adjustments.promotion.where(:source_id => actions.pluck(:id)).count
-    end
-
-    def credits
-      Adjustment.eligible.promotion.where(source_id: actions.map(&:id))
-    end
-
-    def credits_count
-      credits.count
+    def usage_count
+      Adjustment.eligible.promotion.where(source_id: actions.map(&:id)).count
     end
 
     def used_by?(user, excluded_orders = [])
       orders.where.not(id: excluded_orders.map(&:id)).complete.where(user_id: user.id).exists?
     end
 
-    def line_item_actionable?(order, line_item)
-      if eligible? order
+    def line_item_actionable?(order, line_item, promotion_code)
+      if eligible? order, promotion_code.try(:value)
         rules = eligible_rules(order)
         if rules.blank?
           true
@@ -142,13 +148,15 @@ module Spree
     end
 
     def normalize_blank_values
-      [:code, :path].each do |column|
-        self[column] = nil if self[column].blank?
-      end
+      self[:path] = nil if self[:path].blank?
     end
 
     def match_all?
       match_policy == 'all'
+    end
+
+    def usage_count_for_promotable(promotable)
+      promotable.adjustments.where(source_id: actions.map(&:id)).count
     end
   end
 end

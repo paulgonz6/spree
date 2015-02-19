@@ -641,9 +641,10 @@ module Spree
     end
 
     describe '#apply_coupon_code' do
-      let(:promo) { create(:promotion_with_item_adjustment, code: 'abc') }
+      let(:promo) { create(:promotion_with_item_adjustment) }
 
       before do
+        promo.codes.create(value: 'abc')
         Order.any_instance.stub :user => current_api_user
       end
 
@@ -651,7 +652,7 @@ module Spree
         let(:order) { create(:order_with_line_items) }
 
         it 'applies the coupon' do
-          api_put :apply_coupon_code, id: order.to_param, coupon_code: promo.code
+          api_put :apply_coupon_code, id: order.to_param, coupon_code: promo.codes.first.value
 
           expect(response.status).to eq 200
           expect(order.reload.promotions).to eq [promo]
@@ -667,10 +668,10 @@ module Spree
         let(:order) { create(:order) } # no line items to apply the code to
 
         it 'returns an error' do
-          api_put :apply_coupon_code, id: order.to_param, coupon_code: promo.code
+          api_put :apply_coupon_code, id: order.to_param, coupon_code: promo.codes.first.value
 
           expect(response.status).to eq 422
-          expect(order.reload.promotions).to eq []
+          expect(order.reload.promotions).to eq [promo]
           expect(json_response).to eq({
             "success" => nil,
             "error" => Spree.t(:coupon_code_unknown_error),

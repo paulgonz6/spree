@@ -14,23 +14,26 @@ module Spree
         def perform(payload = {})
           order = payload[:order]
           promotion = payload[:promotion]
+          promotion_code = payload[:promotion_code]
 
           result = false
 
-          line_items_to_adjust(promotion, order).each do |line_item|
-            current_result = self.create_adjustment(line_item, order)
+          line_items_to_adjust(promotion, order, promotion_code).each do |line_item|
+            current_result = self.create_adjustment(line_item, order, promotion_code)
             result ||= current_result
           end
+
           return result
         end
 
-        def create_adjustment(adjustable, order)
+        def create_adjustment(adjustable, order, promotion_code)
           amount = self.compute_amount(adjustable)
           return if amount == 0
           self.adjustments.create!(
             amount: amount,
             adjustable: adjustable,
             order: order,
+            promotion_code: promotion_code,
             label: "#{Spree.t(:promotion)} (#{promotion.name})",
           )
           true
@@ -79,10 +82,10 @@ module Spree
             end
           end
 
-          def line_items_to_adjust(promotion, order)
+          def line_items_to_adjust(promotion, order, promotion_code)
             excluded_ids = self.adjustments.pluck(:adjustable_id)
             order.line_items.where.not(id: excluded_ids).select do |line_item|
-              promotion.line_item_actionable? order, line_item
+              promotion.line_item_actionable? order, line_item, promotion_code
             end
           end
       end

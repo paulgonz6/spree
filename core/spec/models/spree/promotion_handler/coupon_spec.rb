@@ -30,7 +30,8 @@ module Spree
       end
 
       context "existing coupon code promotion" do
-        let!(:promotion) { Promotion.create name: "promo", :code => "10off"  }
+        let!(:promotion) { Promotion.create(name: "promo")  }
+        let!(:promotion_code) { promotion.codes.create(value: '10off') }
         let!(:action) { Promotion::Actions::CreateItemAdjustments.create(promotion: promotion, calculator: calculator) }
         let(:calculator) { Calculator::FlatRate.new(preferred_amount: 10) }
 
@@ -160,7 +161,7 @@ module Spree
 
 
             it "coupon code hit max usage" do
-              promotion.update_column(:usage_limit, 1)
+              promotion_code.update_column(:usage_limit, 1)
               coupon = Coupon.new(order)
               coupon.apply
               expect(coupon.successful?).to be true
@@ -229,7 +230,7 @@ module Spree
           end
           context "and multiple quantity per line item" do
             before(:each) do
-              twnty_off = Promotion.create name: "promo", :code => "20off"
+              twnty_off = create(:promotion, name: "promo", code: "20off")
               twnty_off_calc = Calculator::FlatRate.new(preferred_amount: 20)
               Promotion::Actions::CreateItemAdjustments.create(promotion: twnty_off,
                                                                calculator: twnty_off_calc)

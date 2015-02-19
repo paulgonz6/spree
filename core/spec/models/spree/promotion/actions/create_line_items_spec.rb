@@ -3,10 +3,10 @@ require 'spec_helper'
 describe Spree::Promotion::Actions::CreateLineItems do
   let(:order) { create(:order) }
   let(:action) { Spree::Promotion::Actions::CreateLineItems.create }
-  let(:promotion) { stub_model(Spree::Promotion) }
+  let(:promotion) { create(:promotion) }
   let(:shirt) { create(:variant) }
   let(:mug) { create(:variant) }
-  let(:payload) { { order: order } }
+  let(:payload) { { order: order, promotion_code: promotion.codes.first } }
 
   context "#perform" do
     before do

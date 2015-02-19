@@ -87,7 +87,7 @@ module Spree
           updated_at: Time.now,
         )
         if promotion?
-          self.update_column(:eligible, source.promotion.eligible?(adjustable))
+          self.update_column(:eligible, source.promotion.eligible?(adjustable, promotion_code.try(:value)))
         end
       end
       amount
