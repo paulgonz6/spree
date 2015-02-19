@@ -1,9 +1,11 @@
 require 'spec_helper'
 
 describe Spree::Promotion do
-  let(:promotion) { Spree::Promotion.new }
+  let(:promotion) { create(:promotion) }
 
   describe "validations" do
+    let(:promotion) { Spree::Promotion.new }
+
     before :each do
       @valid_promotion = Spree::Promotion.new :name => "A promotion"
     end
@@ -63,7 +65,7 @@ describe Spree::Promotion do
       promotion.created_at = 2.days.ago
 
       @user = stub_model(Spree::LegacyUser, :email => "spree@example.com")
-      @order = stub_model(Spree::Order, :user => @user, :created_at => DateTime.now)
+      @order = create(:order)
       @payload = { :order => @order, :user => @user }
     end
 

@@ -25,6 +25,7 @@ module Spree
     belongs_to :adjustable, polymorphic: true
     belongs_to :source, polymorphic: true
     belongs_to :order, :class_name => "Spree::Order"
+    belongs_to :promotion_code, :class_name => 'Spree::PromotionCode'
 
     validates :label, presence: true
     validates :amount, numericality: true

@@ -11,7 +11,11 @@ module Spree
     has_many :promotion_actions, autosave: true, dependent: :destroy
     alias_method :actions, :promotion_actions
 
-    has_and_belongs_to_many :orders, join_table: 'spree_orders_promotions'
+    has_many :promotion_codes, dependent: :destroy
+    alias_method :codes, :promotion_codes
+
+    has_many :order_promotions, class_name: 'Spree::OrderPromotion'
+    has_many :orders, through: :order_promotions
 
     accepts_nested_attributes_for :promotion_actions, :promotion_rules
 
@@ -57,17 +61,11 @@ module Spree
       results = actions.map do |action|
         action.perform(payload)
       end
+
+      self.order_promotions.create(order: order, promotion_code: payload[:promotion_code])
+
       # If an action has been taken, report back to whatever activated this promotion.
-      action_taken = results.include?(true)
-
-      if action_taken
-      # connect to the order
-      # create the join_table entry.
-        self.orders << order
-        self.save
-      end
-
-      return action_taken
+      return results.include?(true)
     end
 
     # called anytime order.update! happens
