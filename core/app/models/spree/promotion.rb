@@ -73,7 +73,7 @@ module Spree
       self.order_promotions.create(order: order, promotion_code: payload[:promotion_code])
 
       # If an action has been taken, report back to whatever activated this promotion.
-      return results.include?(true)
+      return results.any?
     end
 
     # called anytime order.update! happens

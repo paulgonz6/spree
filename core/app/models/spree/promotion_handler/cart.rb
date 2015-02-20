@@ -39,8 +39,12 @@ module Spree
             promo_table[:id].eq(join_table[:promotion_id])
           ).join_sources
 
+          promotion_code_condition = promo_table.join(code_table, Arel::Nodes::OuterJoin).on(
+            promo_table[:id].eq(code_table[:promotion_id])
+          ).join_sources
+
           Promotion.active.includes(:promotion_rules).
-            joins('LEFT JOIN "spree_promotion_codes" on "spree_promotions"."id" = "spree_promotion_codes"."promotion_id"').
+            joins(promotion_code_condition).
             joins(join_condition).
             where(
               code_table[:value].eq(nil).and(

@@ -20,10 +20,18 @@ module Spree
       private
 
         def promotions
+          promo_table = Promotion.arel_table
+          code_table  = PromotionCode.arel_table
+
+          promotion_code_condition = promo_table.join(code_table, Arel::Nodes::OuterJoin).on(
+            promo_table[:id].eq(code_table[:promotion_id])
+          ).join_sources
+
           Spree::Promotion.
-            joins('LEFT JOIN "spree_promotion_codes" on "spree_promotions"."id" = "spree_promotion_codes"."promotion_id"').where({
+            joins(promotion_code_condition).
+            where({
               id: Spree::Promotion::Actions::FreeShipping.pluck(:promotion_id),
-              spree_promotion_codes: {id: nil},
+              spree_promotion_codes: { id: nil },
               path: nil
             })
         end
