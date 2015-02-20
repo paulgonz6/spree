@@ -376,9 +376,7 @@ describe Spree::OrderContents do
 
   describe "#apply_coupon_code" do
     let(:order) { create(:order_with_line_items) }
-    let(:promo) { create(:promotion_with_item_adjustment) }
-
-    before { promo.codes.create(value: 'abc') }
+    let(:promo) { create(:promotion_with_item_adjustment, code: 'abc') }
 
     it "applies the promo and returns the handler" do
       result = order.contents.apply_coupon_code(promo.codes.first.value)

@@ -641,10 +641,9 @@ module Spree
     end
 
     describe '#apply_coupon_code' do
-      let(:promo) { create(:promotion_with_item_adjustment) }
+      let(:promo) { create(:promotion_with_item_adjustment, code: 'abc') }
 
       before do
-        promo.codes.create(value: 'abc')
         Order.any_instance.stub :user => current_api_user
       end
 

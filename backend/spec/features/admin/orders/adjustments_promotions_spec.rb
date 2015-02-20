@@ -7,10 +7,10 @@ describe "Adjustments Promotions" do
     promotion = create(:promotion_with_item_adjustment,
                          :name       => "$10 off",
                          :path       => 'test',
+                         :code       => "10_off",
                          :starts_at  => 1.day.ago,
                          :expires_at => 1.day.from_now,
                          :adjustment_rate => 10)
-    promotion.codes.create(:value => "10_off")
 
     order = create(:order_with_totals)
     line_item = order.line_items.first

@@ -3,14 +3,9 @@ require 'spec_helper'
 describe Spree::Admin::PromotionsController do
   stub_authorization!
 
-  let!(:promotion1) { create(:promotion, name: "name1", path: "path1") }
-  let!(:promotion2) { create(:promotion, name: "name2", path: "path2") }
+  let!(:promotion1) { create(:promotion, name: "name1", code: "code1", path: "path1") }
+  let!(:promotion2) { create(:promotion, name: "name2", code: "code2", path: "path2") }
   let!(:category) { create :promotion_category }
-
-  before do
-    promotion1.codes.create(value: 'code1')
-    promotion2.codes.create(value: 'code2')
-  end
 
   context "#index" do
 

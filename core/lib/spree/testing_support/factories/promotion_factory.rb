@@ -3,7 +3,8 @@ FactoryGirl.define do
     name 'Promo'
 
     after(:create) do |promotion, evaluator|
-      create(:promotion_code, promotion: promotion)
+      code = promotion.code || generate(:random_code)
+      create(:promotion_code, promotion: promotion, value: code)
       promotion.reload
     end
 
