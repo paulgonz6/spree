@@ -29,6 +29,10 @@ module Spree
     validates :description, length: { maximum: 255 }
 
     before_save :normalize_blank_values
+    before_save :update_usage_limit_on_promotion_codes
+    before_create :bulk_build_promotion_codes
+
+    attr_accessor :base_code, :number_of_codes
 
     def self.advertised
       where(advertise: true)
@@ -136,7 +140,20 @@ module Spree
       end
     end
 
+    def bulk_build_promotion_codes
+      number_of_codes = @number_of_codes.to_i
+
+      if base_code.present? && number_of_codes.present?
+        if number_of_codes == 1
+          promotion_codes.build(value: base_code, usage_limit: usage_limit)
+        elsif number_of_codes > 1
+          number_of_codes.times { build_code_with_base(base_code) }
+        end
+      end
+    end
+
     private
+
     def blacklisted?(promotable)
       case promotable
       when Spree::LineItem
@@ -151,12 +168,26 @@ module Spree
       self[:path] = nil if self[:path].blank?
     end
 
+    def update_usage_limit_on_promotion_codes
+      promotion_codes.update_all(usage_limit: usage_limit) if usage_limit_changed?
+    end
+
     def match_all?
       match_policy == 'all'
     end
 
     def usage_count_for_promotable(promotable)
       promotable.adjustments.where(source_id: actions.map(&:id)).count
+    end
+
+    def build_code_with_base(base_code, random_code_length = 6)
+      code_with_entropy = "#{base_code}_#{('A'..'Z').to_a.sample(random_code_length).join}"
+
+      if Spree::PromotionCode.where(value: code_with_entropy).exists?
+        build_code_with_base(base_code)
+      else
+        self.promotion_codes.build(value: code_with_entropy, usage_limit: usage_limit)
+      end
     end
   end
 end

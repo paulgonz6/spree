@@ -5,6 +5,17 @@ module Spree
 
       helper 'spree/promotion_rules'
 
+      def show
+        @promotion = Spree::Promotion.find(params[:id])
+
+        respond_to do |format|
+          format.csv do
+            headers['Content-Disposition'] = "attachment; filename=\"promotion-code-list-#{@promotion.id}.csv\""
+            headers['Content-Type'] ||= 'text/csv'
+          end
+        end
+      end
+
       protected
         def location_after_save
           spree.edit_admin_promotion_url(@promotion)

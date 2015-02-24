@@ -7,6 +7,18 @@
         <%= f.text_field :name, :class => 'fullwidth' %>
       <% end %>
 
+      <% if @promotion.new_record? %>
+        <%= f.field_container :code do %>
+          <%= f.label :code %>
+          <%= text_field_tag "promotion[base_code]", nil, :class => 'fullwidth' %>
+        <% end %>
+
+        <%= f.field_container :number_of_codes do %>
+          <%= label_tag :number_of_codes %>
+          <%= text_field_tag "promotion[number_of_codes]", 1, class: 'fullwidth' %>
+        <% end %>
+      <% end %>
+
       <%= f.field_container :path do %>
         <%= f.label :path %>
         <%= f.text_field :path, :class => 'fullwidth' %>
@@ -17,26 +29,6 @@
         <%= f.label :advertise %>
       <% end %>
     </div>
-
-    <% if @promotion.promotion_codes.present? %>
-      <%= f.label :promotion_codes %><br />
-
-      <table>
-        <tr>
-          <th><%= f.label :value %></th>
-          <th><%= f.label :usage_limit %></th>
-          <th><%= f.label :delete %></th>
-        </tr>
-
-        <%= f.fields_for :promotion_codes, @promotion.promotion_codes do |pc| %>
-          <tr>
-            <td><%= pc.text_field :value %></td>
-            <td><%= pc.number_field :usage_limit %></td>
-            <td><%= pc.check_box :_destroy %></td>
-          </tr>
-        <% end %>
-      </table>
-    <% end %>
 
     <div class="omega nine columns">
       <%= f.field_container :description do %>

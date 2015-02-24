@@ -410,4 +410,85 @@ describe Spree::Promotion do
       expect(order.adjustment_total).to eq -10
     end
   end
+
+  context "callbacks" do
+    context "create callbacks" do
+      describe "#bulk_create_promotion_codes" do
+        let(:promotion) { Spree::Promotion.new(name: 'A Promo', base_code: base_code, number_of_codes: number_of_codes) }
+        subject { promotion.save }
+
+        context "when base code and number of codes is set" do
+          context "for zero codes" do
+            let(:base_code) { 'a-promo' }
+            let(:number_of_codes) { 0 }
+
+            it "does not create any promotion codes" do
+              subject
+              expect(promotion.promotion_codes.size).to eq 0
+            end
+          end
+
+          context "for one code" do
+            let(:base_code) { 'a-promo' }
+            let(:number_of_codes) { 1 }
+
+            it "creates one promotion code where the base is the whole code value" do
+              subject
+              expect(promotion.promotion_codes.size).to eq number_of_codes
+              expect(promotion.promotion_codes.first.value).to eq base_code
+            end
+          end
+
+          context "for multiple codes" do
+            let(:base_code) { 'a-promo' }
+            let(:number_of_codes) { 10 }
+
+            it "creates multiple promotion codes where the base is part of the codes values" do
+              subject
+              expect(promotion.promotion_codes.size).to eq number_of_codes
+              expect(promotion.promotion_codes.all? {|pc| pc.value == base_code }).to eq false
+              expect(promotion.promotion_codes.all? {|pc| pc.value.include?(base_code) }).to eq true
+            end
+          end
+        end
+
+        context "when base code and number of codes is not set" do
+          let(:base_code) { nil }
+          let(:number_of_codes) { nil }
+
+          it "does not create any promotion codes" do
+            subject
+            expect(promotion.promotion_codes.size).to eq 0
+          end
+        end
+      end
+    end
+
+    context "save callbacks" do
+      describe "#update_usage_limit_on_promotion_codes" do
+        let!(:promotion) { create(:promotion, usage_limit: 10) }
+        let!(:old_usage_limit) { promotion.usage_limit }
+
+        subject { promotion.update_attributes(usage_limit: new_usage_limit) }
+
+        context "when usage limit has changed on the promotion" do
+          let(:new_usage_limit) { 2 }
+
+          it "updates the associated promotion codes' usage limits" do
+            subject
+            expect(promotion.reload.promotion_codes.map(&:usage_limit).uniq).to eq [new_usage_limit]
+          end
+        end
+
+        context "when usage limit has not changed on the promotion" do
+          let(:new_usage_limit) { old_usage_limit }
+
+          it "does not update any promotion codes" do
+            subject
+            expect(promotion.reload.promotion_codes.map(&:usage_limit).uniq).to eq [old_usage_limit]
+          end
+        end
+      end
+    end
+  end
 end
