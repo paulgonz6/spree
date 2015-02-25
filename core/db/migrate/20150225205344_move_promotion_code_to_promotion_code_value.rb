@@ -1,58 +1,57 @@
 class MovePromotionCodeToPromotionCodeValue < ActiveRecord::Migration
   def change
+
     say_with_time 'generating spree_promotion_codes' do
       Spree::Promotion.connection.execute(<<-SQL.strip_heredoc)
         insert into spree_promotion_codes
           (promotion_id, value, usage_limit, created_at, updated_at)
         select
-          p.id,
-          p.code,
-          p.usage_limit,
+          spree_promotions.id,
+          spree_promotions.code,
+          spree_promotions.usage_limit,
           '#{Time.now.to_s(:db)}',
           '#{Time.now.to_s(:db)}'
-        from spree_promotions p
-        left join spree_promotion_codes c
-          on c.promotion_id = p.id
-        where (p.code is not null and p.code <> '') -- promotion has a code
-          and c.id is null -- a promotion_code hasn't already been created
+        from spree_promotions
+        left join spree_promotion_codes
+          on spree_promotion_codes.promotion_id = spree_promotions.id
+        where (spree_promotions.code is not null and spree_promotions.code <> '') -- promotion has a code
+          and spree_promotion_codes.id is null -- a promotion_code hasn't already been created
       SQL
     end
- 
-    too_many_codes_query = <<-SQL
-      select 1 as one
-      from spree_promotion_codes
-      group by promotion_id
-      having count(0) > 1 limit 1
-    SQL
-    if Spree::Promotion.connection.select_one(too_many_codes_query)
+
+    if Spree::PromotionCode.group(:promotion_id).having("count(0) > 1").exists?
       raise "Error: You have promotions with multiple promo codes. The
              migration code will not work correctly".squish
     end
- 
+
     say_with_time 'linking order promotions' do
       Spree::Promotion.connection.execute(<<-SQL.strip_heredoc)
-        update spree_orders_promotions op
-        set promotion_code_id = c.id
-        from spree_promotions p
-        inner join spree_promotion_codes c
-          on c.promotion_id = p.id
-        where op.promotion_id = p.id
-          and op.promotion_code_id is null
+        update spree_orders_promotions
+        set promotion_code_id = (
+          select spree_promotion_codes.id
+          from spree_promotions
+          inner join spree_promotion_codes
+            on spree_promotion_codes.promotion_id = spree_promotions.id
+          where spree_promotions.id = spree_orders_promotions.promotion_id
+        )
+        where spree_orders_promotions.promotion_code_id is null
       SQL
     end
- 
+
     say_with_time 'linking adjustments' do
       Spree::Promotion.connection.execute(<<-SQL.strip_heredoc)
-        update spree_adjustments a
-        set promotion_code_id = c.id
-        from spree_promotion_actions pa
-        inner join spree_promotions p
-          on p.id = pa.promotion_id
-        inner join spree_promotion_codes c
-          on c.promotion_id = p.id
-        where a.source_type = 'Spree::PromotionAction'
-          and a.source_id = pa.id
-          and a.promotion_code_id is null
+        update spree_adjustments
+        set promotion_code_id = (
+          select spree_promotion_codes.id
+          from spree_promotion_actions
+          inner join spree_promotions
+            on spree_promotions.id = spree_promotion_actions.promotion_id
+          inner join spree_promotion_codes
+            on spree_promotion_codes.promotion_id = spree_promotions.id
+          where spree_promotion_actions.id = spree_adjustments.source_id
+        )
+        where spree_adjustments.source_type = 'Spree::PromotionAction'
+          and spree_adjustments.promotion_code_id is null
       SQL
     end
   end
