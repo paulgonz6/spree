@@ -45,6 +45,10 @@ module Spree
       order && !UNACTIVATABLE_ORDER_STATES.include?(order.state)
     end
 
+    def code
+      promotion_code.try!(:value)
+    end
+
     def expired?
       !!(starts_at && Time.now < starts_at || expires_at && Time.now > expires_at)
     end
