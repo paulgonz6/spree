@@ -2,6 +2,17 @@ FactoryGirl.define do
   factory :promotion, class: Spree::Promotion do
     name 'Promo'
 
+    transient do
+      code nil
+    end
+
+    after(:create) do |promotion, evaluator|
+      if evaluator.code
+        create(:promotion_code, promotion: promotion, value: evaluator.code)
+      end
+      promotion.reload
+    end
+
     trait :with_line_item_adjustment do
       transient do
         adjustment_rate 10
