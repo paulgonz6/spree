@@ -1,6 +1,9 @@
 class MovePromotionCodeToPromotionCodeValue < ActiveRecord::Migration
   def change
 
+    # This is done via SQL for performance reasons. For larger stores it makes
+    # a difference of minutes vs hours for completion time.
+
     say_with_time 'generating spree_promotion_codes' do
       Spree::Promotion.connection.execute(<<-SQL.strip_heredoc)
         insert into spree_promotion_codes
