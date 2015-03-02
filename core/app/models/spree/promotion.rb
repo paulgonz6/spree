@@ -62,11 +62,17 @@ module Spree
         (expires_at.nil? || expires_at > Time.now)
     end
 
-    def activate(payload)
-      order = payload[:order]
+    def activate(order:, line_item: nil, user: nil, path: nil, promotion_code: nil)
       return unless self.class.order_activatable?(order)
 
-      payload[:promotion] = self
+      payload = {
+        order: order,
+        promotion: self,
+        line_item: line_item,
+        user: user,
+        path: path,
+        promotion_code: promotion_code,
+      }
 
       # Track results from actions to see if any action has been taken.
       # Actions should return nil/false if no action has been taken.
@@ -78,10 +84,11 @@ module Spree
       action_taken = results.include?(true)
 
       if action_taken
-      # connect to the order
-      # create the join_table entry.
-        self.orders << order
-        self.save
+        # connect to the order
+        order_promotions.find_or_create_by!(
+          order_id: order.id,
+          promotion_code_id: promotion_code.try!(:id),
+        )
       end
 
       return action_taken

@@ -49,6 +49,7 @@ describe "Promotion Adjustments" do
       fill_in "Name", :with => "Promotion"
       fill_in "Usage Limit", :with => "1"
       fill_in "bulk_base", :with => "single_use"
+      fill_in "bulk_number", :with => "1"
       click_button "Create"
       page.should have_content("Editing Promotion")
 
@@ -191,6 +192,7 @@ describe "Promotion Adjustments" do
       create(:product, :name => "RoR Mug")
       fill_in "Name", :with => "Promotion"
       fill_in "bulk_base", :with => "complex"
+      fill_in "bulk_number", :with => "1"
       click_button "Create"
       page.should have_content("Editing Promotion")
 
