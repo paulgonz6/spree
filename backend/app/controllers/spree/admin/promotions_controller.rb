@@ -11,11 +11,13 @@ module Spree
         def build_promotion_codes
           @bulk_base = params[:bulk_base] if params[:bulk_base].present?
           @bulk_number = Integer(params[:bulk_number]) if params[:bulk_number].present?
+          @bulk_limit = Integer(params[:bulk_limit]) if params[:bulk_limit].present?
 
           if @bulk_base && @bulk_number
             @promotion.build_promotion_codes(
               base_code: @bulk_base,
               number_of_codes: @bulk_number,
+              usage_limit: @bulk_limit,
             )
           end
         end

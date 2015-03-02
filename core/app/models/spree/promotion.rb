@@ -95,10 +95,10 @@ module Spree
     end
 
     # called anytime order.update! happens
-    # TODO: add specs for coupon_code usage limit
-    def eligible?(promotable)
+    def eligible?(promotable, promotion_code: nil)
       return false if expired?
       return false if usage_limit_exceeded?(promotable)
+      return false if promotion_code && promotion_code.usage_limit_exceeded?(promotable)
       return false if blacklisted?(promotable)
       !!eligible_rules(promotable, {})
     end
@@ -128,7 +128,6 @@ module Spree
     #
     # @param promotable object (e.g. order/line item/shipment)
     # @return true or false
-    # TODO: specs
     def usage_limit_exceeded?(promotable)
       # TODO: This logic appears to be wrong.
       # Currently if you have:
@@ -145,27 +144,16 @@ module Spree
     # Number of times the code has been used overall
     #
     # @return [Integer] usage count
-    # TODO: specs
     def usage_count
       adjustment_promotion_scope(Spree::Adjustment.eligible).count
-    end
-
-    # Number of times the code has been used for the given promotable
-    #
-    # @param promotable promotable object (e.g. order/line item/shipment)
-    # @return [Integer] usage count for this promotable
-    # TODO: specs
-    def usage_count_for(promotable)
-      adjustment_promotion_scope(promotable.adjustments).count
     end
 
     def used_by?(user, excluded_orders = [])
       orders.where.not(id: excluded_orders.map(&:id)).complete.where(user_id: user.id).exists?
     end
 
-    # TODO: specs
-    def line_item_actionable?(order, line_item)
-      if eligible?(order)
+    def line_item_actionable?(order, line_item, promotion_code: nil)
+      if eligible?(order, promotion_code: promotion_code)
         rules = eligible_rules(order)
         if rules.blank?
           true
@@ -186,12 +174,12 @@ module Spree
     #   number_of_codes > 1 it is the base of the generated codes.
     # @param number_of_codes [Integer] Number of codes to generate
     # @param usage_limit [Integer] Usage limit for each code
-    def build_promotion_codes(base_code:, number_of_codes:)
+    def build_promotion_codes(base_code:, number_of_codes:, usage_limit:nil)
       if number_of_codes == 1
-        codes.build(value: base_code)
+        codes.build(value: base_code, usage_limit: usage_limit)
       elsif number_of_codes > 1
         number_of_codes.times do
-          build_code_with_base(base_code: base_code)
+          build_code_with_base(base_code: base_code, usage_limit: usage_limit)
         end
       end
     end
@@ -219,13 +207,17 @@ module Spree
       match_policy == 'all'
     end
 
-    def build_code_with_base(base_code:, random_code_length: 6)
+    def usage_count_for(promotable)
+      adjustment_promotion_scope(promotable.adjustments).count
+    end
+
+    def build_code_with_base(base_code:, usage_limit:nil, random_code_length: 6)
       code_with_entropy = "#{base_code}_#{('A'..'Z').to_a.sample(random_code_length).join}"
 
       if Spree::PromotionCode.where(value: code_with_entropy).exists?
         build_code_with_base(base_code)
       else
-        codes.build(value: code_with_entropy)
+        codes.build(value: code_with_entropy, usage_limit: usage_limit)
       end
     end
   end

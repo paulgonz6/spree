@@ -65,6 +65,15 @@ describe Spree::Admin::PromotionsController do
 
         expect(assigns(:promotion).codes.first.value).to eq ('abc')
       end
+
+      context "with usage limit set per code" do
+        let(:params) { super().merge(bulk_limit: 10) }
+
+        it "sets the usage limit on the code" do
+          spree_post :create, params
+          expect(assigns(:promotion).codes.first.usage_limit).to eq 10
+        end
+      end
     end
 
     context "with multiple promo codes" do
@@ -80,6 +89,15 @@ describe Spree::Admin::PromotionsController do
         }.to change { Spree::PromotionCode.count }.by(2)
 
         expect(assigns(:promotion).codes.map(&:value)).to all(match(/\Aabc_/))
+      end
+
+      context "with usage limit set per code" do
+        let(:params) { super().merge(bulk_limit: 10) }
+
+        it "sets the usage limit on the code" do
+          spree_post :create, params
+          expect(assigns(:promotion).codes.map(&:usage_limit)).to all(eq(10))
+        end
       end
     end
   end

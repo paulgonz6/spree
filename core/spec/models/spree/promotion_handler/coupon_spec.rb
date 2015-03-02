@@ -182,8 +182,23 @@ module Spree
             end
 
 
-            it "coupon code hit max usage" do
-              promotion.update_column(:usage_limit, 1)
+            it "promotion hit max usage" do
+              promotion.update!(usage_limit: 1)
+              coupon = Coupon.new(order)
+              coupon.apply
+              expect(coupon.successful?).to be true
+
+              order_2 = create(:order)
+              order_2.stub :coupon_code => "10off"
+              coupon = Coupon.new(order_2)
+              coupon.apply
+              expect(coupon.successful?).to be false
+              expect(coupon.error).to eq Spree.t(:coupon_code_max_usage)
+            end
+
+
+            it "promotion code hit max usage" do
+              promotion_code.update!(usage_limit: 1)
               coupon = Coupon.new(order)
               coupon.apply
               expect(coupon.successful?).to be true
