@@ -42,6 +42,29 @@ describe Spree::Admin::PromotionsController do
     end
   end
 
+  describe "#update" do
+    let(:params) { {id: promotion.id, promotion: {name: 'some promo'}} }
+    let(:promotion) { create(:promotion, code: 'abc123') }
+
+    before { promotion.codes.first.update!(usage_limit: 100) }
+
+    context "when bulk limit is provided" do
+      let(:params) { super().merge(bulk_limit: 1) }
+
+      it "updates the usage limit on all the codes" do
+        spree_post :update, params
+        expect(promotion.codes.map(&:usage_limit).uniq).to eq [1]
+      end
+    end
+
+    context "when bulk limit is not provided" do
+      it "does not update the codes' usage limits" do
+        spree_post :update, params
+        expect(promotion.codes.map(&:usage_limit).uniq).to eq [100]
+      end
+    end
+  end
+
   describe "#create" do
     let(:params) { {promotion: {name: 'some promo'}} }
 

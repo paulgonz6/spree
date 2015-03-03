@@ -4,6 +4,7 @@ module Spree
       before_filter :load_data
 
       create.before :build_promotion_codes
+      update.before :bulk_update_limits
 
       helper 'spree/promotion_rules'
 
@@ -19,6 +20,14 @@ module Spree
               number_of_codes: @bulk_number,
               usage_limit: @bulk_limit,
             )
+          end
+        end
+
+        def bulk_update_limits
+          @bulk_limit = Integer(params[:bulk_limit]) if params[:bulk_limit].present?
+
+          if @bulk_limit && @promotion.codes.present?
+            @promotion.codes.map{|code| code.update!(usage_limit: @bulk_limit) }
           end
         end
 

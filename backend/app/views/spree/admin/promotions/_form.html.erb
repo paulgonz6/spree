@@ -17,11 +17,11 @@
           <%= label_tag :number_of_codes %>
           <%= text_field_tag "bulk_number", @bulk_number, class: 'fullwidth' %>
         <% end %>
+      <% end %>
 
-        <%= f.field_container :per_code_usage_limit do %>
-          <%= label_tag :per_code_usage_limit %>
-          <%= text_field_tag "bulk_limit", @bulk_limit, class: 'fullwidth' %>
-        <% end %>
+      <%= f.field_container :per_code_usage_limit do %>
+        <%= label_tag :per_code_usage_limit %>
+        <%= text_field_tag "bulk_limit", @promotion.codes.first.try(:usage_limit), class: 'fullwidth' %>
       <% end %>
 
       <%= f.field_container :path do %>
