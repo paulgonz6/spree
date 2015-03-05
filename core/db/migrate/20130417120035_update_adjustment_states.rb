@@ -4,9 +4,9 @@ class UpdateAdjustmentStates < ActiveRecord::Migration
       order.adjustments.update_all(:state => 'closed')
     end
 
-    Spree::Shipment.shipped.includes(:adjustment).find_each do |shipment|
-      shipment.adjustment.update_column(:state, 'finalized') if shipment.adjustment
-    end
+    # Spree::Shipment.shipped.includes(:adjustment).find_each do |shipment|
+    #   shipment.adjustment.update_column(:state, 'finalized') if shipment.adjustment
+    # end
 
     Spree::Adjustment.where(:state => nil).update_all(:state => 'open')
   end

@@ -74,7 +74,7 @@ module Spree
         unless @order.completed?
           @order.contents.refresh_shipment_rates
         end
-        if @order.shipped_shipments.count > 0
+        if @order.cartons.count > 0
           redirect_to edit_admin_order_url(@order)
         end
       end

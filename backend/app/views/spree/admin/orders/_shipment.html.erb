@@ -7,7 +7,7 @@
       <span class="shipment-state"><%= Spree.t("shipment_states.#{shipment.state}") %></span>
       <%= Spree.t(:package_from) %>
       <strong class="stock-location-name" data-hook="stock-location-name">'<%= shipment.stock_location.name %>'</strong>
-      <% if shipment.ready? && can?(:update, shipment) %>
+      <% if shipment.ready? && can?(:update, shipment) && shipment.inventory_units.any?(&:on_hand?) %>
         <%= (' - ' + link_to(Spree.t(:ship), '#', :class => 'ship button fa fa-arrow-right', :data => {'shipment-number' => shipment.number})).html_safe %>
       <% end %>
     </legend>
@@ -34,7 +34,7 @@
     <tbody data-shipment-number="<%= shipment.number %>" data-order-number="<%= order.number %>">
       <%= render 'spree/admin/orders/shipment_manifest', shipment: shipment %>
 
-      <% unless shipment.shipped? %>
+      <% unless shipment.order.completed? %>
         <tr class="edit-method hidden total">
           <td colspan="5">
             <div class="field alpha five columns">
@@ -68,7 +68,7 @@
           <% end %>
 
           <td class="actions">
-            <% if( (can? :update, shipment) and !shipment.shipped?) %>
+            <% if( (can? :update, shipment) and !order.completed?) %>
               <%= link_to '', '#', :class => 'edit-method fa fa-edit no-text with-tip', :data => {:action => 'edit'}, :title => Spree.t('edit') %>
             <% end %>
           </td>

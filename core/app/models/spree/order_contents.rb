@@ -159,6 +159,11 @@ module Spree
       order.shipments.map(&:refresh_rates)
     end
 
+    # ship all unshipped inventory units in a shipment
+    def ship(shipment)
+      shipment.ship!
+    end
+
     private
       def order_updater
         @updater ||= OrderUpdater.new(order)

@@ -1,5 +1,3 @@
-require 'ostruct'
-
 module Spree
   class Shipment < ActiveRecord::Base
     belongs_to :order, class_name: 'Spree::Order', touch: true, inverse_of: :shipments
@@ -23,19 +21,14 @@ module Spree
 
     make_permalink field: :number, length: 11, prefix: 'H'
 
-    scope :shipped, -> { with_state('shipped') }
     scope :ready,   -> { with_state('ready') }
     scope :pending, -> { with_state('pending') }
     scope :with_state, ->(*s) { where(state: s) }
-    scope :trackable, -> { where("tracking IS NOT NULL AND tracking != ''") }
-    # sort by most recent shipped_at, falling back to created_at. add "id desc" to make specs that involve this scope more deterministic.
-    scope :reverse_chronological, -> { order('coalesce(spree_shipments.shipped_at, spree_shipments.created_at) desc', id: :desc) }
+    scope :reverse_chronological, -> { order(created_at: :desc, id: :desc) }
 
     # shipment state machine (see http://github.com/pluginaweek/state_machine/tree/master for details)
     state_machine initial: :pending, use_transactions: false do
       event :ready do
-        transition from: :pending, to: :shipped, if: lambda {|shipment| !shipment.requires_shipment? }
-
         transition from: :pending, to: :ready, if: lambda { |shipment|
           # Fix for #2040
           shipment.determine_state(shipment.order) == 'ready'
@@ -45,11 +38,6 @@ module Spree
       event :pend do
         transition from: :ready, to: :pending
       end
-
-      event :ship do
-        transition from: [:ready, :canceled], to: :shipped
-      end
-      after_transition to: :shipped, do: :after_ship
 
       event :cancel do
         transition to: :canceled, from: [:pending, :ready]
@@ -65,7 +53,7 @@ module Spree
         }
         transition from: :canceled, to: :pending
       end
-      after_transition from: :canceled, to: [:pending, :ready, :shipped], do: :after_resume
+      after_transition from: :canceled, to: [:pending, :ready], do: :after_resume
 
       after_transition do |shipment, transition|
         shipment.state_changes.create!(
@@ -90,11 +78,6 @@ module Spree
 
     def ready_or_pending?
       self.ready? || self.pending?
-    end
-
-    def shipped=(value)
-      return unless value == '1' && shipped_at.nil?
-      self.shipped_at = Time.now
     end
 
     def shipping_method
@@ -124,7 +107,6 @@ module Spree
     end
 
     def refresh_rates
-      return shipping_rates if shipped?
       return [] unless can_get_rates?
 
       # StockEstimator.new assigment below will replace the current shipping_method
@@ -167,7 +149,7 @@ module Spree
     end
 
     def editable_by?(user)
-      !shipped?
+      !order.completed?
     end
 
     ManifestItem = Struct.new(:line_item, :variant, :quantity, :states)
@@ -215,24 +197,17 @@ module Spree
         state: new_state,
         updated_at: Time.now,
       )
-      after_ship if new_state == 'shipped' and old_state != 'shipped'
     end
 
     # Determines the appropriate +state+ according to the following logic:
     #
     # pending    unless order is complete and +order.payment_state+ is +paid+
-    # shipped    if already shipped (ie. does not change the state)
     # ready      all other cases
     def determine_state(order)
       return 'canceled' if order.canceled?
       return 'pending' unless order.can_ship?
       return 'pending' if inventory_units.any? &:backordered?
-      return 'shipped' if state == 'shipped'
       order.paid? ? 'ready' : 'pending'
-    end
-
-    def tracking_url
-      @tracking_url ||= shipping_method.build_tracking_url(tracking)
     end
 
     def include?(variant)
@@ -348,6 +323,15 @@ module Spree
       self.stock_location.fulfillable?
     end
 
+    def ship!
+      carton = order.cartons.create!(
+        stock_location: stock_location,
+        address: address,
+        shipping_method: shipping_method,
+        inventory_units: inventory_units.select(&:on_hand?),
+      )
+    end
+
     private
       def enough_stock_at_destination_location(variant, quantity, stock_location)
         stock_item = Spree::StockItem.where(variant: variant).
@@ -379,18 +363,6 @@ module Spree
         end
       end
 
-      def after_ship
-        inventory_units.each &:ship!
-        send_shipped_email if requires_shipment?
-        touch :shipped_at
-        fulfill_order_with_stock_location
-        update_order_shipment_state
-      end
-
-      def fulfill_order_with_stock_location
-        Spree::OrderStockLocation.fulfill_for_order_with_stock_location(order, stock_location)
-      end
-
       def update_order_shipment_state
         new_state = OrderUpdater.new(order).update_shipment_state
         order.update_columns(
@@ -399,16 +371,12 @@ module Spree
         )
       end
 
-      def send_shipped_email
-        ShipmentMailer.shipped_email(self.id).deliver
-      end
-
       def set_cost_zero_when_nil
         self.cost = 0 unless self.cost
       end
 
       def update_adjustments
-        if cost_changed? && state != 'shipped'
+        if cost_changed? && !order.completed?
           recalculate_adjustments
         end
       end
