@@ -1,5 +1,4 @@
-module Spree
-class Carton < ActiveRecord::Base
+class Spree::Carton < ActiveRecord::Base
   belongs_to :order, class_name: 'Spree::Order', touch: true, inverse_of: :cartons
   belongs_to :address, class_name: 'Spree::Address', inverse_of: :cartons
   belongs_to :stock_location, class_name: 'Spree::StockLocation', inverse_of: :cartons
@@ -55,7 +54,4 @@ class Carton < ActiveRecord::Base
   def fulfill_order_with_stock_location
     Spree::OrderStockLocation.fulfill_for_order_with_stock_location(order, stock_location)
   end
-
-
-end
 end

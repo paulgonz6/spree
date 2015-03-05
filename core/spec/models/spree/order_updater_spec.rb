@@ -68,42 +68,53 @@ module Spree
       end
     end
 
-    context "updating shipment state" do
-      before do
-        order.stub :backordered? => false
-        order.stub_chain(:shipments, :shipped, :count).and_return(0)
-        order.stub_chain(:shipments, :ready, :count).and_return(0)
-        order.stub_chain(:shipments, :pending, :count).and_return(0)
-      end
-
-      it "is backordered" do
-        order.stub :backordered? => true
+    context "#update_shipment_state" do
+      subject do
         updater.update_shipment_state
-
-        order.shipment_state.should == 'backorder'
+        order.shipment_state
       end
 
-      it "is nil" do
-        order.stub_chain(:shipments, :states).and_return([])
-        order.stub_chain(:shipments, :count).and_return(0)
-
-        updater.update_shipment_state
-        order.shipment_state.should be_nil
+      context "the order is backordered" do
+        before { order.inventory_units << create(:inventory_unit, state: 'backordered') }
+        it { is_expected.to eq('backorder') }
       end
 
+      context "there are no inventory units and no shipments" do
+        it { is_expected.to be_nil }
+      end
 
-      ["shipped", "ready", "pending"].each do |state|
-        it "is #{state}" do
-          order.stub_chain(:shipments, :states).and_return([state])
-          updater.update_shipment_state
-          order.shipment_state.should == state.to_s
+      context "there are shipped inventory units" do
+        before { order.inventory_units << create(:inventory_unit, state: 'shipped') }
+
+        context "all are shipped" do
+          it { is_expected.to eq('shipped') }
+        end
+
+        context "some are shipped" do
+          before { order.inventory_units << create(:inventory_unit, state: 'on_hand') }
+          it { is_expected.to eq('partial') }
         end
       end
 
-      it "is partial" do
-        order.stub_chain(:shipments, :states).and_return(["pending", "ready"])
-        updater.update_shipment_state
-        order.shipment_state.should == 'partial'
+      context "there are no shipped inventory units" do
+        context "all shipments are in the 'ready' state" do
+          before { order.shipments << create(:shipment, order: order, state: 'ready') }
+          it { is_expected.to eq('ready') }
+        end
+
+        context "all shipments are in the 'pending' state" do
+          before { order.shipments << create(:shipment, order: order, state: 'pending') }
+          it { is_expected.to eq('pending') }
+        end
+
+        context "multiple shipments in different states" do
+          before do
+            order.shipments << create(:shipment, order: order, state: 'ready')
+            order.shipments << create(:shipment, order: order, state: 'pending')
+          end
+
+          it { is_expected.to eq('partial') }
+        end
       end
     end
 

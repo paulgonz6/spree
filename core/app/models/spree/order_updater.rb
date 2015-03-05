@@ -1,7 +1,7 @@
 module Spree
   class OrderUpdater
     attr_reader :order
-    delegate :payments, :line_items, :adjustments, :all_adjustments, :shipments, :update_hooks, :quantity, to: :order
+    delegate :payments, :line_items, :adjustments, :all_adjustments, :shipments, :update_hooks, :quantity, :inventory_units, to: :order
 
     def initialize(order)
       @order = order
@@ -111,34 +111,16 @@ module Spree
 
     # Updates the +shipment_state+ attribute according to the following logic:
     #
-    # shipped   when all Shipments are in the "shipped" state
-    # partial   when at least one Shipment has a state of "shipped" and there is another Shipment with a state other than "shipped"
-    #           or there are InventoryUnits associated with the order that have a state of "sold" but are not associated with a Shipment.
-    # ready     when all Shipments are in the "ready" state
+    # shipped   when all inventory units are in a Carton
+    # partial   when some inventory units are in a Carton,
+    #             or when no inventory units are in a carton and the shipments are in more than one state
+    # ready     when no inventory units are in a Carton and when all Shipments are in the "ready" state
     # backorder when there is backordered inventory associated with an order
-    # pending   when all Shipments are in the "pending" state
+    # pending   when no inventory units are in a Carton and when all Shipments are in the "pending" state
     #
     # The +shipment_state+ value helps with reporting, etc. since it provides a quick and easy way to locate Orders needing attention.
     def update_shipment_state
-      if order.backordered?
-        order.shipment_state = 'backorder'
-      else
-        # get all the shipment states for this order
-        shipment_states = shipments.states
-        if shipment_states.size > 1
-          # multiple shiment states means it's most likely partially shipped
-          order.shipment_state = 'partial'
-        else
-          # will return nil if no shipments are found
-          order.shipment_state = shipment_states.first
-          # TODO inventory unit states?
-          # if order.shipment_state && order.inventory_units.where(:shipment_id => nil).exists?
-          #   shipments exist but there are unassigned inventory units
-          #   order.shipment_state = 'partial'
-          # end
-        end
-      end
-
+      order.shipment_state = calculate_shipment_state
       order.state_changed('shipment')
       order.shipment_state
     end
@@ -187,6 +169,24 @@ module Spree
     end
 
     private
+
+      def calculate_shipment_state
+        shipment_states = shipments.states
+
+        if inventory_units.any?(&:backordered?)
+          'backorder'
+        elsif inventory_units.any? && inventory_units.all?(&:shipped?)
+          'shipped'
+        elsif inventory_units.any?(&:shipped?)
+          'partial'
+        elsif shipment_states.size == 1
+          shipment_states.first
+        elsif shipment_states.size > 1
+          'partial'
+        else
+          nil
+        end
+      end
 
       def benchmark(label)
         result = nil
