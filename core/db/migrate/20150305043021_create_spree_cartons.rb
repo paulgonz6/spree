@@ -3,14 +3,13 @@ class CreateSpreeCartons < ActiveRecord::Migration
     create_table "spree_cartons" do |t|
       t.string "number", index: true
 
-      t.integer "order_id", index: true
-      t.integer "stock_location_id", index: true
-      t.integer "address_id"
-      t.integer "shipping_method_id"
+      t.references "order", index: true
+      t.references "stock_location", index: true
+      t.references "address"
+      t.references "shipping_method"
 
       t.string "tracking"
 
-      t.string "state"
       t.datetime "shipped_at"
 
       t.timestamps
