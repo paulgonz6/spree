@@ -16,6 +16,11 @@ class MoveShippedShipmentsToCartons < ActiveRecord::Migration
              The migration code will not work correctly.".squish
     end
 
+    if Spree::Shipment.where("number not like 'H_________'").exists?
+      raise "Error: You have non-standard shipment numbers. Please update this
+             migration to generate carton numbers correctly for your database."
+    end
+
     say_with_time 'generating cartons' do
       last_id = Spree::Shipment.last.try!(:id) || 0
 
@@ -24,19 +29,21 @@ class MoveShippedShipmentsToCartons < ActiveRecord::Migration
           Spree::Carton.connection.execute(<<-SQL.strip_heredoc)
             insert into spree_cartons
               (
-                imported_from_shipment_id, order_id, stock_location_id, address_id,
-                shipping_method_id, tracking, shipped_at, created_at, updated_at
+                number, imported_from_shipment_id, order_id, stock_location_id,
+                address_id, shipping_method_id, tracking, shipped_at,
+                created_at, updated_at
               )
             select
-              spree_shipments.id,
+              replace(spree_shipments, 'H', 'C'), -- number
+              spree_shipments.id, -- imported_from_shipment_id
               spree_shipments.order_id,
               spree_shipments.stock_location_id,
               spree_shipments.address_id,
               spree_shipping_rates.shipping_method_id,
               spree_shipments.tracking,
               spree_shipments.shipped_at,
-              '#{Time.now.to_s(:db)}',
-              '#{Time.now.to_s(:db)}'
+              '#{Time.now.to_s(:db)}', -- created_at
+              '#{Time.now.to_s(:db)}' -- updated_at
             from spree_shipments
             left join spree_shipping_rates
               on spree_shipping_rates.shipment_id = spree_shipments.id
