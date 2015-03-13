@@ -2,6 +2,11 @@ module Spree
   class Promotion < ActiveRecord::Base
     MATCH_POLICIES = %w(all any)
     UNACTIVATABLE_ORDER_STATES = ["complete", "awaiting_return", "returned"]
+    MAX_NUMBER_OF_CODES = 1000
+
+    def self.max_number_of_codes
+      MAX_NUMBER_OF_CODES
+    end
 
     belongs_to :promotion_category
 
@@ -26,6 +31,7 @@ module Spree
     validates :usage_limit, numericality: { greater_than: 0, allow_nil: true }
     validates :per_code_usage_limit, numericality: { greater_than_or_equal_to: 0, allow_nil: true }
     validates :description, length: { maximum: 255 }
+    validates :codes, length: { maximum: Spree::Promotion.max_number_of_codes }
 
     before_save :normalize_blank_values
 

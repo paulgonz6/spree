@@ -24,6 +24,7 @@ module Spree
         def load_bulk_code_information
           @bulk_base = @promotion.codes.first.try!(:value)
           @bulk_number = @promotion.codes.count
+          @bulk_number_max = Spree::Promotion.max_number_of_codes
         end
 
         def location_after_save

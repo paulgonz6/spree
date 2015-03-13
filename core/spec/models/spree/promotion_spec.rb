@@ -24,6 +24,11 @@ describe Spree::Promotion do
       @valid_promotion.name = nil
       @valid_promotion.should_not be_valid
     end
+
+    it "validates max number of codes" do
+      @valid_promotion.build_promotion_codes(base_code: 'base', number_of_codes: 1001)
+      expect(@valid_promotion.valid?).to eq false
+    end
   end
 
   describe ".advertised" do

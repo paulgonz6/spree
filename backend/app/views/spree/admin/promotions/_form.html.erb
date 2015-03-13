@@ -14,7 +14,7 @@
 
       <%= f.field_container :number_of_codes do %>
         <%= label_tag :number_of_codes %>
-        <%= text_field_tag "bulk_number", @bulk_number, :readonly => !@promotion.new_record?, class: 'fullwidth' %>
+        <%= number_field_tag "bulk_number", @bulk_number, :max => @bulk_number_max, :readonly => !@promotion.new_record?, class: 'fullwidth' %>
       <% end %>
 
       <%= f.field_container :per_code_usage_limit do %>
