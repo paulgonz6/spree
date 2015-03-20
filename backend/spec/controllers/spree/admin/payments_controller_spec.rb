@@ -30,6 +30,7 @@ module Spree
         end
 
         it "should create payments correctly" do
+          order.reload
           order.payments.count.should == 1
           expect(order.payments.last.state).to eq 'checkout'
           expect(response).to redirect_to(spree.admin_order_payments_path(order))

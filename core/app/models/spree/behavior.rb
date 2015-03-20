@@ -3,12 +3,14 @@ module Spree
     class_attribute :registry
     self.registry = {
       order_updater: [
-        Behaviors::DenormalizeTotals,
         Behaviors::CalculateAdjustments,
-        Behaviors::DenormalizeTotals,
+        Behaviors::UpdateOrderTotals,
+        Behaviors::UpdateOrderPaymentState,
         Behaviors::AdvanceShipments,
-        Behaviors::DenormalizeTotals,
-        Behaviors::PersistOrder,
+        Behaviors::UpdateOrderShipmentState,
+        Behaviors::CalculateAdjustments,
+        Behaviors::UpdateOrderTotals,
+        Behaviors::PersistOrderTotals,
       ]
     }
 
