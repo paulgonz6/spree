@@ -56,6 +56,7 @@ module Spree
 
       def load_user
         @current_api_user ||= Spree.user_class.find_by(spree_api_key: api_key.to_s)
+        sign_in @current_api_user, store: false if @current_api_user
       end
 
       def authenticate_user
