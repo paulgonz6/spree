@@ -118,6 +118,12 @@ describe Spree::Shipment do
         expect(shipment.manifest.first.variant).to eq variant
       end
     end
+
+    context "with inventory scope" do
+      it "only returns inventory with the particular scope" do
+        expect(shipment.manifest(inventory_unit_scope: Spree::InventoryUnit.where(state: 'on_hand'))).to eq []
+      end
+    end
   end
 
   context 'shipping_rates' do
@@ -299,7 +305,7 @@ describe Spree::Shipment do
     end
 
     it 'restocks the items' do
-      shipment.stub_chain(inventory_units: [mock_model(Spree::InventoryUnit, state: "on_hand", line_item: line_item, variant: variant)])
+      variant = shipment.inventory_units.first.variant
       shipment.stock_location = mock_model(Spree::StockLocation)
       shipment.stock_location.should_receive(:restock).with(variant, 1, shipment)
       shipment.after_cancel
@@ -335,6 +341,8 @@ describe Spree::Shipment do
   end
 
   context "#resume" do
+    let(:inventory_unit) { create(:inventory_unit) }
+
     it 'will determine new state based on order' do
       shipment.order.stub(:update!)
 
@@ -346,7 +354,7 @@ describe Spree::Shipment do
     end
 
     it 'unstocks them items' do
-      shipment.stub_chain(inventory_units: [mock_model(Spree::InventoryUnit, line_item: line_item, variant: variant)])
+      variant = shipment.inventory_units.first.variant
       shipment.stock_location = mock_model(Spree::StockLocation)
       shipment.stock_location.should_receive(:unstock).with(variant, 1, shipment)
       shipment.after_resume

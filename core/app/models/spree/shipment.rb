@@ -13,6 +13,7 @@ module Spree
     has_many :state_changes, as: :stateful
     has_many :inventory_units, dependent: :delete_all, inverse_of: :shipment
     has_many :adjustments, as: :adjustable, dependent: :delete_all
+    has_many :cartons, -> { uniq }, through: :inventory_units
 
     after_save :update_adjustments
 

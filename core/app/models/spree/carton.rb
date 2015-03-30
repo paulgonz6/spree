@@ -7,6 +7,7 @@ class Spree::Carton < ActiveRecord::Base
 
   has_many :inventory_units, inverse_of: :carton
   has_many :orders, -> { uniq }, through: :inventory_units
+  has_many :shipments, -> { uniq }, through: :inventory_units
 
   validates :address, presence: true
   validates :stock_location, presence: true
@@ -34,5 +35,9 @@ class Spree::Carton < ActiveRecord::Base
 
   def order_emails
     orders.map(&:email).uniq
+  end
+
+  def shipment_numbers
+    shipments.map(&:number)
   end
 end
