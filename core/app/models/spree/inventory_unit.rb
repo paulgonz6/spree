@@ -40,6 +40,10 @@ module Spree
       event :return do
         transition to: :returned, from: :shipped
       end
+
+      event :cancel do
+        transition to: :canceled, from: [:on_hand, :backordered]
+      end
     end
 
     # This was refactored from a simpler query because the previous implementation
