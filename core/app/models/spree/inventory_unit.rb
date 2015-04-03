@@ -13,6 +13,7 @@ module Spree
     scope :on_hand, -> { where state: 'on_hand' }
     scope :shipped, -> { where state: 'shipped' }
     scope :returned, -> { where state: 'returned' }
+    scope :not_canceled, -> { where.not(state: 'canceled') }
     scope :backordered_per_variant, ->(stock_item) do
       includes(:shipment, :order)
         .where("spree_shipments.state != 'canceled'").references(:shipment)
