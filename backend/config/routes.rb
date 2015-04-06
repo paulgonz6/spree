@@ -85,6 +85,8 @@ Spree::Core::Engine.add_routes do
         put :approve
         put :cancel
         put :resume
+        get :cancel_inventory
+        post :short_ship_units
       end
 
       resource :customer, :controller => "orders/customer_details"

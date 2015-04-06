@@ -18,7 +18,9 @@ module Spree
     scope :shipped, -> { where state: 'shipped' }
     scope :post_shipment, -> { where(state: POST_SHIPMENT_STATES) }
     scope :returned, -> { where state: 'returned' }
+    scope :canceled, -> { where(state: 'canceled') }
     scope :not_canceled, -> { where.not(state: 'canceled') }
+    scope :cancelable, -> { where(state: PRE_SHIPMENT_STATES) }
     scope :backordered_per_variant, ->(stock_item) do
       includes(:shipment, :order)
         .where("spree_shipments.state != 'canceled'").references(:shipment)
@@ -43,7 +45,7 @@ module Spree
       end
 
       event :cancel do
-        transition to: :canceled, from: [:on_hand, :backordered]
+        transition to: :canceled, from: CANCELABLE_STATES.map(&:to_sym)
       end
     end
 

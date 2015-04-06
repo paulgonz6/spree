@@ -22,5 +22,33 @@ describe Spree::OrderAmendments do
     it "adjusts the order" do
       expect { subject }.to change { order.total }.by(-10.0)
     end
+
+    context "when rounding is required" do
+      let(:order) { create(:order_ready_to_ship, line_items_count: 1, line_items_price: 0.83) }
+      let(:line_item) { order.line_items.first }
+      let(:inventory_unit_1) { line_item.inventory_units[0] }
+      let(:inventory_unit_2) { line_item.inventory_units[1] }
+
+      before do
+        order.contents.add(line_item.variant)
+
+        # make the total $1.67 so it divides unevenly
+        Spree::Adjustment.tax.create!(
+          order: order,
+          adjustable: line_item,
+          amount: 0.01,
+          label: 'some fake tax',
+          state: 'closed',
+        )
+        order.update!
+      end
+
+      it "generates the correct total amount" do
+        Spree::OrderAmendments.new.short_ship_units([inventory_unit_1])
+        Spree::OrderAmendments.new.short_ship_units([inventory_unit_2])
+        expect(line_item.adjustments.non_tax.sum(:amount)).to eq -1.67
+        expect(line_item.total).to eq 0
+      end
+    end
   end
 end
