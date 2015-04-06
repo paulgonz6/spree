@@ -2,7 +2,7 @@ module Spree
   module Admin
     class OrdersController < Spree::Admin::BaseController
       before_filter :initialize_order_events
-      before_filter :load_order, :only => [:edit, :update, :advance, :complete, :confirm, :cancel, :resume, :approve, :resend, :open_adjustments, :close_adjustments, :cart]
+      before_filter :load_order, :only => [:edit, :update, :advance, :complete, :confirm, :cancel, :resume, :approve, :resend, :open_adjustments, :close_adjustments, :cart, :cancel_inventory, :short_ship_units]
 
       rescue_from Spree::LineItem::InsufficientStock, with: :insufficient_stock_error
 
@@ -164,6 +164,26 @@ module Spree
         flash[:success] = Spree.t(:all_adjustments_closed)
 
         respond_with(@order) { |format| format.html { redirect_to :back } }
+      end
+
+      def cancel_inventory
+        @inventory_units = @order.inventory_units.cancelable
+      end
+
+      def short_ship_units
+        inventory_units = Spree::InventoryUnit.where(id: params[:inventory_unit_ids])
+
+        if inventory_units.size != params[:inventory_unit_ids].size
+          flash[:error] = Spree.t(:unable_to_find_all_inventory_units)
+          redirect_to :back
+        elsif inventory_units.present?
+          Spree::OrderAmendments.new.short_ship_units(inventory_units)
+          flash[:success] = Spree.t(:inventory_canceled)
+          redirect_to edit_admin_order_url(@order)
+        else
+          flash[:error] = Spree.t(:no_inventory_selected)
+          redirect_to :back
+        end
       end
 
       private
