@@ -116,12 +116,7 @@ describe Spree::OrderShipping do
       end
 
       it "only ships the shippable ones" do
-        expect {
-          subject
-        }.to change { Spree::Carton.count }.by(1)
-
-        carton = Spree::Carton.last
-        expect(carton.inventory_units).to match_array(shippable_line_item.inventory_units)
+        expect(subject.inventory_units).to match_array(shippable_line_item.inventory_units)
       end
     end
 
