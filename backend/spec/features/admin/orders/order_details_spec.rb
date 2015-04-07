@@ -82,6 +82,19 @@ describe "Order Details", js: true do
         page.should have_content("spree t-shirt")
       end
 
+      it "can add tracking information" do
+        visit spree.edit_admin_order_path(order)
+
+        within(".show-tracking") do
+          click_icon :edit
+        end
+        fill_in "tracking", :with => "FOOBAR"
+        click_icon :check
+
+        page.should_not have_css("input[name=tracking]")
+        page.should have_content("Tracking: FOOBAR")
+      end
+
       it "can change the shipping method" do
         order = create(:completed_order_with_totals)
         visit spree.edit_admin_order_path(order)
