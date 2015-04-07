@@ -37,7 +37,7 @@ describe Spree::Admin::CancellationsController do
     end
 
     context "unable to find all the inventory" do
-      let(:inventory_units) { [Spree::InventoryUnit.new(id: Spree::InventoryUnit.last.id + 1)] }
+      let(:inventory_units) { [Spree::InventoryUnit.new(id: -1)] }
 
       it "redirects back" do
         subject
