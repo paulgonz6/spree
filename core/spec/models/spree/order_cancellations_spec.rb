@@ -24,7 +24,7 @@ describe Spree::OrderCancellations do
     end
 
     context "with a who" do
-      subject { order.cancellations(whodunnit: 'some automated system').short_ship([inventory_unit]) }
+      subject { order.cancellations.short_ship([inventory_unit], whodunnit: 'some automated system') }
 
       let(:user) { order.user }
 

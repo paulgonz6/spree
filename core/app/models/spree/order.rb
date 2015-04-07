@@ -236,8 +236,8 @@ module Spree
       @shipping ||= Spree::OrderShipping.new(self)
     end
 
-    def cancellations(whodunnit:nil)
-      Spree::OrderCancellations.new(self, whodunnit: whodunnit)
+    def cancellations
+      @cancellations ||= Spree::OrderCancellations.new(self)
     end
 
     def associate_user!(user, override_email = true)
