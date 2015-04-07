@@ -873,6 +873,7 @@ en:
     no_trackers_found: No Trackers Found
     no_stock_locations_found: No stock locations found
     no_tracking_present: No tracking details provided.
+    no_variant_found: No variant found.
     none: None
     none_selected: None Selected
     normal_amount: Normal Amount
@@ -1348,6 +1349,7 @@ en:
     variant: Variant
     variant_placeholder: Choose a variant
     variant_search: Variant Search
+    variant_search_placeholder: "SKU, UPC, QL#, Product or Option Value"
     variants: Variants
     version: Version
     void: Void

@@ -2,6 +2,13 @@ module Spree
   module Admin
     class StockItemsController < Spree::Admin::BaseController
       before_filter :determine_backorderable, only: :update
+      before_filter :load_user_stock_locations, only: :index
+
+      def index
+        @stock_location_id = params[:stock_location_id]
+        @variants = Spree::Core::Search::Variant.new(params[:variant_search_term] || "", scope: Spree::Variant.all).results
+        # @stock_items = @search.result.page(params[:page]).per(params[:per_page] || Spree::Config[:orders_per_page])
+      end
 
       def update
         stock_item.save
@@ -49,6 +56,12 @@ module Spree
 
         def determine_backorderable
           stock_item.backorderable = params[:stock_item].present? && params[:stock_item][:backorderable].present?
+        end
+
+        def load_user_stock_locations
+          # TODO - this should filter the stock locations
+          # to only include the ones that the user has access to
+          @stock_locations = Spree::StockLocation.all
         end
     end
   end
