@@ -29,7 +29,8 @@ describe "Cancelling inventory" do
       end
 
       click_button "Cancel Inventory"
-      page.should have_content("Inventory canceled")
+      expect(page).to have_content("Inventory canceled")
+      expect(page).to have_content("1 x canceled")
     end
   end
 
@@ -37,7 +38,7 @@ describe "Cancelling inventory" do
     before { order.inventory_units.map(&:cancel!) }
 
     it "does not display the link to cancel inventory" do
-      page.should_not have_content("Inventory canceled")
+      expect(page).not_to have_content("Inventory canceled")
     end
   end
 end
