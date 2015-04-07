@@ -10,7 +10,7 @@
 
 <% content_for :table_filter do %>
   <div data-hook="admin_orders_index_search">
-    <%= form_for [:admin, "Spree::StockItem"] do |f| %>
+    <%= form_for :variant_search, url: admin_stock_items_path, method: :get do |f| %>
       <div class="field-block alpha four columns">
         <div class="field">
           <%= label_tag nil, Spree.t(:stock_location) %>

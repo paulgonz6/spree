@@ -3,7 +3,7 @@
     <tr data-hook="admin_product_stock_management_index_headers">
       <th><%= Spree.t(:item) %></th>
       <th><%= Spree.t(:options) %></th>
-      <th style="width: 191px;"><%= Spree.t(:stock_location) %></th>
+      <th style="width: 202px;"><%= Spree.t(:stock_location) %></th>
       <th style="width: 90px;"><%= Spree.t(:count_on_hand) %></th>
       <th class="actions" style="width: 100px;"></th>
     </tr>
@@ -25,18 +25,6 @@
                     <td><%= Spree.t(:sku) %></td>
                     <td class="fullwidth">
                       <%= variant.sku %>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td><%= Spree.t(:upc) %></td>
-                    <td class="fullwidth">
-                      <%= variant.upc %>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td><%= Spree.t(:ql_number_abbr) %></td>
-                    <td class="fullwidth">
-                      <%= variant.ql_item_number %>
                     </td>
                   </tr>
                   <tr>
@@ -67,24 +55,31 @@
             <tbody>
               <%- locations_without_items = @stock_locations - variant.stock_items.flat_map(&:stock_location) %>
               <% variant.stock_items.each do |item| %>
-                <% if !@stock_locations.include?(item.stock_location) || !(@hide_out_of_stock && item.count_on_hand == 0) %>
+                <% if @stock_locations.include?(item.stock_location) %>
                   <tr id="stock-item-<%= item.id %>" class="<%= cycle('odd', 'even', :name => 'stock_locations')%>">
-                    <td class="align-center" style="width: 190px;"><%= item.stock_location.name %></td>
-                    <td class="align-center count-on-hand" style="width: 90px;"><%= item.count_on_hand %></td>
+                    <td class="align-center" style="width: 200px;"><%= item.stock_location.name %></td>
+                    <td class="align-center count-on-hand" style="width: 90px;" id="count-on-hand-<%= item.id %>">
+                      <span><%= item.count_on_hand %></span>
+                      <%= number_field_tag :count_on_hand, item.count_on_hand, class: 'fullwidth js-stock-item-count' %>
+                    </td>
                     <td class="actions" style="width: 100px;">
                       <%= link_to_with_icon 'edit', Spree.t('actions.edit'), '#', :no_text => true, :data => {:action => 'edit', :id => item.id } if can?(:edit, item) %>
+                      <%= link_to_with_icon 'check', Spree.t('actions.update'), '#', :no_text => true, :data => {:action => 'green', :id => item.id, :location_id => item.stock_location_id } if can?(:edit, item) %>
+                      <%= link_to_with_icon 'void', Spree.t('actions.cancel'), '#', :no_text => true, :data => {:action => 'red', :id => item.id } if can?(:edit, item) %>
                     </td>
                   </tr>
                 <% end %>
               <% end %>
-              <% if locations_without_items.any? %>
+              <% if locations_without_items.any? && can?(:create, Spree::StockItem) %>
                 <tr class="<%= cycle('odd', 'even', :name => 'stock_locations')%>">
-                  <td style="width: 190px;">
-                    <%= select_tag :stock_location_id, options_from_collection_for_select(locations_without_items, :id, :name), class: 'select2 fullwidth' %>
+                  <td style="width: 200px;">
+                    <%= select_tag :stock_location_id, options_from_collection_for_select(locations_without_items, :id, :name), { :include_blank => true, :class => 'select2 fullwidth', "data-placeholder" => Spree.t(:select_a_stock_location) } %>
                   </td>
-                  <td class="align-center count-on-hand" style="width: 90px;"></td>
+                  <td class="align-center count-on-hand" style="width: 90px;">
+                    <%= number_field_tag :count_on_hand, "", class: 'fullwidth' %>
+                  </td>
                   <td class="actions" style="width: 100px;">
-                    <%= link_to_with_icon 'add', Spree.t('actions.edit'), '#', :no_text => true %>
+                    <%= link_to_with_icon 'plus', Spree.t('actions.create'), '#', :no_text => true, :data => {:action => 'green' } %>
                   </td>
                 </tr>
               <% end %>

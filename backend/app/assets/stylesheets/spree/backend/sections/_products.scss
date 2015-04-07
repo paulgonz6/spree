@@ -30,16 +30,17 @@
 }
 
 #listing_product_stock {
+  margin-left: 0px;
+  margin-right: 0px;
+
+  a.fa-void,
+  a.fa-check,
+  .js-stock-item-count {
+    display: none;
+  }
+
   > tbody {
     > tr {
-      &.even {
-        td {
-          background-color: $color-tbl-even;
-        }
-      }
-      &.odd:hover > td {
-        background-color: $color-tbl-even;
-      }
       > td {
         background-color: $color-tbl-odd;
 
@@ -63,6 +64,39 @@
           }
         }
       }
+      &:hover {
+        .stock-variant-field-table {
+          td {
+            background-color: $color-1;
+          }
+        }
+      }
+    }
+    .variant-image {
+      width: 35%;
+    }
+    .variant-details {
+      width: 65%;
+      padding: 0px 5px;
+    }
+    .variant-image,
+    .variant-details,
+    .variant-container {
+      float: left;
+    }
+    .variant-container {
+      padding-top: 10px;
+    }
+    .stock-variant-field-table {
+      tr td {
+        border: none;
+        padding: 2px;
+        text-align: left;
+      }
+      tr td:first-child {
+        font-weight: bold;
+      }
+      margin-bottom: 0px;
     }
   }
   td {
@@ -70,11 +104,12 @@
 
     &.stock_location_info {
       padding: 0;
+      border: none;
 
       table {
         margin-bottom: 0;
         border-collapse: collapse;
-        min-height: 102px;
+        min-height: 135px;
 
         thead {
           th {
@@ -95,6 +130,8 @@
             td {
               padding: 5px 10px;
               vertical-align: middle;
+              border: 1px solid $color-border;
+              border-top: none;
 
               &:first-child {
                 border-left: none;
@@ -106,12 +143,18 @@
 
             &:last-child {
               td {
-                border-bottom: none;
+                border-bottom: 1px solid $color-border;
               }
             }
           }
         }
       }
+    }
+  }
+  > tbody > tr:first-child > td > table.stock_location_table > tbody > tr:first-child > td {
+    border-top: 1px solid $color-border;
+    &:last-child {
+      border-top: none;  
     }
   }
 }

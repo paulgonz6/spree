@@ -6,8 +6,8 @@ module Spree
 
       def index
         @stock_location_id = params[:stock_location_id]
-        @variants = Spree::Core::Search::Variant.new(params[:variant_search_term] || "", scope: Spree::Variant.all).results
-        # @stock_items = @search.result.page(params[:page]).per(params[:per_page] || Spree::Config[:orders_per_page])
+        ransack_result = Spree::Core::Search::Variant.new(params[:variant_search_term] || "", scope: Spree::Variant.all)
+        @variants = ransack_result.results.page(params[:page]).per(params[:per_page] || Spree::Config[:orders_per_page])
       end
 
       def update
