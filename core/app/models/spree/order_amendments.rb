@@ -1,7 +1,8 @@
 # This class represents all of the actions one can take to modify an Order after it is complete
 class Spree::OrderAmendments
-  def initialize(order)
+  def initialize(order, user:nil)
     @order = order
+    @user = user
   end
 
   def short_ship_units(inventory_units)
@@ -19,7 +20,11 @@ class Spree::OrderAmendments
 
   def short_ship_unit(inventory_unit)
     Spree::InventoryUnit.transaction do
-      unit_cancel = Spree::UnitCancel.create!(inventory_unit: inventory_unit, reason: Spree::UnitCancel::SHORT_SHIP)
+      unit_cancel = Spree::UnitCancel.create!(
+        inventory_unit: inventory_unit,
+        reason: Spree::UnitCancel::SHORT_SHIP,
+        created_by: @user,
+      )
       unit_cancel.adjust
       inventory_unit.cancel!
     end
