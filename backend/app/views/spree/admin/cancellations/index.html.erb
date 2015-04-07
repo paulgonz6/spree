@@ -21,7 +21,7 @@
   </thead>
 
   <tbody>
-    <%= form_for :inventory_units, url: cancel_admin_order_cancellation_path(@order) do |f| %>
+    <%= form_for :inventory_units, url: short_ship_admin_order_cancellations_path(@order) do |f| %>
       <% @inventory_units.each do |inventory_unit| %>
         <tr class="inventory-unit">
           <td class="inventory-unit-image">

@@ -1,21 +1,21 @@
 module Spree
   module Admin
-    class OrderCancellationsController < Spree::Admin::BaseController
-      before_filter :load_order, :only => [:show, :cancel]
+    class CancellationsController < Spree::Admin::BaseController
+      before_filter :load_order, :only => [:index, :short_ship]
 
-      def show
+      def index
         @inventory_units = @order.inventory_units.cancelable
       end
 
-      def cancel
+      def short_ship
         inventory_units = Spree::InventoryUnit.where(id: params[:inventory_unit_ids])
 
         if inventory_units.size != params[:inventory_unit_ids].size
           flash[:error] = Spree.t(:unable_to_find_all_inventory_units)
-          redirect_to admin_order_cancellation_path(@order)
+          redirect_to admin_order_cancellations_path(@order)
         elsif inventory_units.empty?
           flash[:error] = Spree.t(:no_inventory_selected)
-          redirect_to admin_order_cancellation_path(@order)
+          redirect_to admin_order_cancellations_path(@order)
         else
           @order.cancellations(whodunnit: whodunnit).short_ship(inventory_units)
 
@@ -31,7 +31,7 @@ module Spree
       end
 
       def load_order
-        @order = Order.find_by_number!(params[:id])
+        @order = Order.find_by_number!(params[:order_id])
         authorize! action, @order
       end
     end

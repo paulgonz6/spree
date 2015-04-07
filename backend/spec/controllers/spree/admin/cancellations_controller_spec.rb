@@ -1,9 +1,9 @@
 require 'spec_helper'
 
-describe Spree::Admin::OrderCancellationsController do
+describe Spree::Admin::CancellationsController do
 
   describe "#cancel" do
-    subject { spree_post :cancel, id: order.number, inventory_unit_ids: inventory_units.map(&:id) }
+    subject { spree_post :short_ship, order_id: order.number, inventory_unit_ids: inventory_units.map(&:id) }
 
     let(:order) { order = create(:order_ready_to_ship, :number => "R100", :state => "complete", line_items_count: 1) }
     let(:referer) { "order_admin_page" }
@@ -13,7 +13,7 @@ describe Spree::Admin::OrderCancellationsController do
 
       it "redirects back" do
         subject
-        response.should redirect_to(spree.admin_order_cancellation_path(order))
+        expect(response).to redirect_to(spree.admin_order_cancellations_path(order))
       end
 
       it "sets an error message" do
@@ -27,7 +27,7 @@ describe Spree::Admin::OrderCancellationsController do
 
       it "redirects back" do
         subject
-        response.should redirect_to(spree.admin_order_cancellation_path(order))
+        expect(response).to redirect_to(spree.admin_order_cancellations_path(order))
       end
 
       it "sets an error message" do
@@ -41,7 +41,7 @@ describe Spree::Admin::OrderCancellationsController do
 
       it "redirects to admin order edit" do
         subject
-        response.should redirect_to(spree.edit_admin_order_path(order))
+        expect(response).to redirect_to(spree.edit_admin_order_path(order))
       end
 
       it "sets an success message" do

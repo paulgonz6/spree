@@ -114,11 +114,11 @@ Spree::Core::Engine.add_routes do
           post :perform
         end
       end
-    end
 
-    resources :order_cancellations, only: [:show] do
-      member do
-        post :cancel
+      resources :cancellations, only: [:index] do
+        collection do
+          post :short_ship
+        end
       end
     end
 
