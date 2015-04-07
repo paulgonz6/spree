@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Spree::OrderAmendments do
   describe "#short_ship_units" do
-    subject { Spree::OrderAmendments.new.short_ship_units([inventory_unit]) }
+    subject { Spree::OrderAmendments.new(order).short_ship_units([inventory_unit]) }
 
     let(:order) { create(:order_ready_to_ship) }
     let(:inventory_unit) { order.inventory_units.first }
@@ -44,8 +44,8 @@ describe Spree::OrderAmendments do
       end
 
       it "generates the correct total amount" do
-        Spree::OrderAmendments.new.short_ship_units([inventory_unit_1])
-        Spree::OrderAmendments.new.short_ship_units([inventory_unit_2])
+        Spree::OrderAmendments.new(order).short_ship_units([inventory_unit_1])
+        Spree::OrderAmendments.new(order).short_ship_units([inventory_unit_2])
         expect(line_item.adjustments.non_tax.sum(:amount)).to eq -1.67
         expect(line_item.total).to eq 0
       end

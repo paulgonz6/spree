@@ -177,7 +177,7 @@ module Spree
           flash[:error] = Spree.t(:unable_to_find_all_inventory_units)
           redirect_to :back
         elsif inventory_units.present?
-          Spree::OrderAmendments.new.short_ship_units(inventory_units)
+          Spree::OrderAmendments.new(@order).short_ship_units(inventory_units)
           flash[:success] = Spree.t(:inventory_canceled)
           redirect_to edit_admin_order_url(@order)
         else
