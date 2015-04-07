@@ -12,7 +12,7 @@ describe "Cancelling inventory" do
     )
   end
 
-  before(:each) do
+  def visit_order
     visit spree.admin_path
     click_link "Orders"
     within_row(1) do
@@ -22,6 +22,8 @@ describe "Cancelling inventory" do
 
   context "when some inventory is cancelable" do
     it "can cancel the inventory" do
+      visit_order
+
       click_link 'Cancel Inventory'
 
       within_row(1) do
@@ -35,10 +37,12 @@ describe "Cancelling inventory" do
   end
 
   context "when all inventory is not cancelable" do
-    before { order.inventory_units.map(&:cancel!) }
+    before { order.inventory_units.each(&:cancel!) }
 
     it "does not display the link to cancel inventory" do
-      expect(page).not_to have_content("Inventory canceled")
+      visit_order
+
+      expect(page).to have_no_content('Cancel Inventory')
     end
   end
 end

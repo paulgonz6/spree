@@ -2,6 +2,20 @@ require 'spec_helper'
 
 describe Spree::Admin::CancellationsController do
 
+  describe "#index" do
+    subject { spree_get :index, order_id: order.number }
+
+    let(:order) { create(:order_ready_to_ship, line_items_count: 1)}
+
+    context "for an order with inventory" do
+      render_views
+
+      it "succeeds" do
+        expect(response).to be_ok
+      end
+    end
+  end
+
   describe "#cancel" do
     subject { spree_post :short_ship, order_id: order.number, inventory_unit_ids: inventory_units.map(&:id) }
 
