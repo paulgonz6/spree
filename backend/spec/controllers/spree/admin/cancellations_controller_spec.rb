@@ -65,6 +65,7 @@ describe Spree::Admin::CancellationsController do
 
       it "creates a unit cancel" do
         expect { subject }.to change { Spree::UnitCancel.count }.by(1)
+        expect(Spree::UnitCancel.last.created_by).to be_present
         expect(Spree::UnitCancel.last.created_by).to eq(controller.spree_current_user.email)
       end
 
