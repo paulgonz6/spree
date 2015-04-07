@@ -1,8 +1,18 @@
 # This class represents all of the actions one can take to modify an Order after it is complete
 class Spree::OrderAmendments
+  def initialize(order)
+    @order = order
+  end
+
   def short_ship_units(inventory_units)
-    inventory_units.each {|iu| short_ship_unit(iu) }
-    inventory_units.map(&:order).uniq.map{|o| o.update! }
+    if inventory_units.map(&:order_id).uniq != [@order.id]
+      raise ArgumentError, "Not all inventory units belong to this order"
+    end
+
+    Spree::OrderMutex.with_lock!(@order) do
+      inventory_units.each { |iu| short_ship_unit(iu) }
+      @order.update!
+    end
   end
 
   private
