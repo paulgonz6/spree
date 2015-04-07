@@ -52,7 +52,7 @@ module Spree
       end
 
       event :cancel do
-        transition to: :canceled, from: CANCELABLE_STATES.map(&:to_sym)
+        transition to: :canceled, from: PRE_SHIPMENT_STATES.map(&:to_sym)
       end
     end
 
