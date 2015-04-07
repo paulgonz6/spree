@@ -10,6 +10,16 @@ module Spree
       subject.stock_items.count.should eq Variant.count
     end
 
+    # test for associations due to activerecord not allowing a has_many relationship with multiple foreign keys
+    it 'has many stock transfers' do
+      stock_location  = create(:stock_location, name: "testing")
+      stock_transfer1 = create(:stock_transfer, destination_location: stock_location)
+      stock_transfer2 = create(:stock_transfer, destination_location: stock_location)
+
+      expect(stock_location.stock_transfers.count).to eq 2
+      expect(stock_location.stock_transfers).to eq [stock_transfer1, stock_transfer2]
+    end
+
     context "handling stock items" do
       let!(:variant) { create(:variant) }
 

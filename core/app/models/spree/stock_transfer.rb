@@ -1,11 +1,19 @@
 module Spree
   class StockTransfer < ActiveRecord::Base
     has_many :stock_movements, :as => :originator
+    has_many :transfer_items
 
     belongs_to :source_location, :class_name => 'StockLocation'
     belongs_to :destination_location, :class_name => 'StockLocation'
 
+    scope :by_location, ->(location_id){ where('source_location_id=? OR destination_location_id=?', location_id, location_id)}
+
     make_permalink field: :number, prefix: 'T'
+
+
+    def status
+      closed_at? ? Spree.t(:closed) : Spree.t(:open)
+    end
 
     def to_param
       number
