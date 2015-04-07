@@ -1,8 +1,8 @@
 require 'spec_helper'
 
-describe Spree::OrderAmendments do
-  describe "#short_ship_units" do
-    subject { Spree::OrderAmendments.new(order).short_ship_units([inventory_unit]) }
+describe Spree::OrderCancellations do
+  describe "#short_ship" do
+    subject { order.cancellations.short_ship([inventory_unit]) }
 
     let(:order) { create(:order_ready_to_ship, line_items_count: 1) }
     let(:inventory_unit) { order.inventory_units.first }
@@ -21,6 +21,17 @@ describe Spree::OrderAmendments do
 
     it "adjusts the order" do
       expect { subject }.to change { order.total }.by(-10.0)
+    end
+
+    context "with a who" do
+      subject { order.cancellations(whodunnit: 'some automated system').short_ship([inventory_unit]) }
+
+      let(:user) { order.user }
+
+      it "sets the user on the UnitCancel" do
+        expect { subject }.to change { Spree::UnitCancel.count }.by(1)
+        expect(Spree::UnitCancel.last.created_by).to eq("some automated system")
+      end
     end
 
     context "when rounding is required" do
@@ -44,8 +55,8 @@ describe Spree::OrderAmendments do
       end
 
       it "generates the correct total amount" do
-        Spree::OrderAmendments.new(order).short_ship_units([inventory_unit_1])
-        Spree::OrderAmendments.new(order).short_ship_units([inventory_unit_2])
+        order.cancellations.short_ship([inventory_unit_1])
+        order.cancellations.short_ship([inventory_unit_2])
         expect(line_item.adjustments.non_tax.sum(:amount)).to eq -1.67
         expect(line_item.total).to eq 0
       end

@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Spree::Admin::OrderInventoriesController do
+describe Spree::Admin::OrderCancellationsController do
 
   describe "#cancel" do
     subject { spree_post :cancel, id: order.number, inventory_unit_ids: inventory_units.map(&:id) }
@@ -13,7 +13,7 @@ describe Spree::Admin::OrderInventoriesController do
 
       it "redirects back" do
         subject
-        response.should redirect_to(spree.admin_order_inventory_path(order))
+        response.should redirect_to(spree.admin_order_cancellation_path(order))
       end
 
       it "sets an error message" do
@@ -27,7 +27,7 @@ describe Spree::Admin::OrderInventoriesController do
 
       it "redirects back" do
         subject
-        response.should redirect_to(spree.admin_order_inventory_path(order))
+        response.should redirect_to(spree.admin_order_cancellation_path(order))
       end
 
       it "sets an error message" do
@@ -51,6 +51,7 @@ describe Spree::Admin::OrderInventoriesController do
 
       it "creates a unit cancel" do
         expect { subject }.to change { Spree::UnitCancel.count }.by(order.inventory_units.not_canceled.size)
+        expect(Spree::UnitCancel.last.created_by).to eq(controller.spree_current_user.email)
       end
 
       it "cancels the inventory" do

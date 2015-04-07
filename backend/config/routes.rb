@@ -116,7 +116,7 @@ Spree::Core::Engine.add_routes do
       end
     end
 
-    resources :order_inventories, only: [:show] do
+    resources :order_cancellations, only: [:show] do
       member do
         post :cancel
       end

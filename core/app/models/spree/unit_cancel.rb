@@ -4,7 +4,6 @@
 class Spree::UnitCancel < ActiveRecord::Base
   SHORT_SHIP = 'Short Ship'
   belongs_to :inventory_unit
-  belongs_to :created_by, class_name: Spree.user_class.to_s
   has_many :adjustments, as: :source, dependent: :destroy
 
   validates :inventory_unit, presence: true

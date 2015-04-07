@@ -1,11 +1,11 @@
 # This class represents all of the actions one can take to modify an Order after it is complete
-class Spree::OrderAmendments
-  def initialize(order, user:nil)
+class Spree::OrderCancellations
+  def initialize(order, whodunnit:nil)
     @order = order
-    @user = user
+    @whodunnit = whodunnit
   end
 
-  def short_ship_units(inventory_units)
+  def short_ship(inventory_units)
     if inventory_units.map(&:order_id).uniq != [@order.id]
       raise ArgumentError, "Not all inventory units belong to this order"
     end
@@ -23,7 +23,7 @@ class Spree::OrderAmendments
       unit_cancel = Spree::UnitCancel.create!(
         inventory_unit: inventory_unit,
         reason: Spree::UnitCancel::SHORT_SHIP,
-        created_by: @user,
+        created_by: @whodunnit,
       )
       unit_cancel.adjust
       inventory_unit.cancel!
