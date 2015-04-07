@@ -23,7 +23,6 @@ describe "Cancelling inventory" do
 
       click_button "Cancel Inventory"
       page.should have_content("Inventory canceled")
-      expect(order.inventory_units.canceled.size).to eq 1
     end
   end
 
