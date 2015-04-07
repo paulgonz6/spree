@@ -3,7 +3,14 @@ require 'spec_helper'
 describe "Cancelling inventory" do
   stub_authorization!
 
-  let!(:order) { order = create(:order_ready_to_ship, :number => "R100", :state => "complete") }
+  let!(:order) do
+    create(
+      :order_ready_to_ship,
+      number: "R100",
+      state: "complete",
+      line_items_count: 1,
+    )
+  end
 
   before(:each) do
     visit spree.admin_path
