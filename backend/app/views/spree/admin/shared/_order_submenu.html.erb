@@ -53,9 +53,9 @@
     <% end %>
 
     <% if can?(:cancel, Spree::InventoryUnit) && @order.inventory_units.cancelable.present? %>
-      <li<%== ' class="active"' if current == 'Cancel Inventory' %>>
-        <%= link_to_with_icon 'cancel', Spree.t(:cancel_inventory), cancel_inventory_admin_order_url(@order) %>
-      </li>
+      <%= content_tag('li', :class => ('active' if current == 'Cancel Inventory')) do %>
+        <%= link_to_with_icon 'cancel', Spree.t(:cancel_inventory), admin_order_inventory_path(@order) %>
+      <% end %>
     <% end %>
   </ul>
 </nav>

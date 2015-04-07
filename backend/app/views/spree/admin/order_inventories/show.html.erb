@@ -1,14 +1,14 @@
 <% content_for :page_title do %>
-  <%= link_to "#{Spree.t(:order)} ##{@order.number}", spree.edit_admin_order_path(@order) %> - <%= Spree.t(:cancel_inventory) %>
+  <%= link_to Spree.t(:order_number, number: @order.number), spree.edit_admin_order_path(@order) %> - <%= Spree.t(:cancel_inventory) %>
 <% end %>
 
 <table class="stock-contents index">
   <colgroup>
     <col style="width: 10%;" />
-    <col style="width: 40%;" />
+    <col style="width: 35%;" />
     <col style="width: 10%;" />
     <col style="width: 15%;" />
-    <col style="width: 25%;" />
+    <col style="width: 20%;" />
     <col style="width: 10%;" />
   </colgroup>
 
@@ -21,7 +21,7 @@
   </thead>
 
   <tbody>
-    <%= form_for :inventory_units, url: short_ship_units_admin_order_path(@order) do |f| %>
+    <%= form_for :inventory_units, url: cancel_admin_order_inventory_path(@order) do |f| %>
       <% @inventory_units.each do |inventory_unit| %>
         <tr class="inventory-unit">
           <td class="inventory-unit-image">
