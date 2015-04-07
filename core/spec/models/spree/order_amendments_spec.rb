@@ -4,7 +4,7 @@ describe Spree::OrderAmendments do
   describe "#short_ship_units" do
     subject { Spree::OrderAmendments.new(order).short_ship_units([inventory_unit]) }
 
-    let(:order) { create(:order_ready_to_ship) }
+    let(:order) { create(:order_ready_to_ship, line_items_count: 1) }
     let(:inventory_unit) { order.inventory_units.first }
 
     it "creates a UnitCancel record" do

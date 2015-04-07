@@ -5,7 +5,7 @@ describe Spree::Admin::OrderInventoriesController do
   describe "#cancel" do
     subject { spree_post :cancel, id: order.number, inventory_unit_ids: inventory_units.map(&:id) }
 
-    let(:order) { order = create(:order_ready_to_ship, :number => "R100", :state => "complete") }
+    let(:order) { order = create(:order_ready_to_ship, :number => "R100", :state => "complete", line_items_count: 1) }
     let(:referer) { "order_admin_page" }
 
     context "no inventory unit ids are provided" do
