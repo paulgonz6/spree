@@ -4,22 +4,24 @@
 class Spree::UnitCancel < ActiveRecord::Base
   SHORT_SHIP = 'Short Ship'
   belongs_to :inventory_unit
-  has_many :adjustments, as: :source, dependent: :destroy
+  has_one :adjustment, as: :source, dependent: :destroy
 
   validates :inventory_unit, presence: true
 
   # Creates necessary cancel adjustments for the line item.
-  def adjust
+  def adjust!
+    raise "Adjustment is already created" if adjustment
+
     amount = compute_amount(inventory_unit.line_item)
 
-    self.adjustments.create!({
+    create_adjustment!(
       adjustable: inventory_unit.line_item,
       amount: amount,
       order: inventory_unit.order,
       label: "#{Spree.t(:cancellation)} - #{reason}",
       eligible: true,
-      state: 'closed'
-    })
+      state: 'closed',
+    )
   end
 
   # This method is used by Adjustment#update to recalculate the cost.

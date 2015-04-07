@@ -4,8 +4,8 @@ describe Spree::UnitCancel do
   let(:unit_cancel) { Spree::UnitCancel.create!(inventory_unit: inventory_unit, reason: Spree::UnitCancel::SHORT_SHIP) }
   let(:inventory_unit) { create(:inventory_unit) }
 
-  describe '#adjust' do
-    subject { unit_cancel.adjust }
+  describe '#adjust!' do
+    subject { unit_cancel.adjust! }
 
     it "creates an adjustment with the correct attributes" do
       expect { subject }.to change{ Spree::Adjustment.count }.by(1)
@@ -17,6 +17,14 @@ describe Spree::UnitCancel do
       expect(adjustment.label).to eq "Cancellation - Short Ship"
       expect(adjustment.eligible).to eq true
       expect(adjustment.state).to eq 'closed'
+    end
+
+    context "when an adjustment has already been created" do
+      before { unit_cancel.adjust! }
+
+      it "raises" do
+        expect { subject }.to raise_error("Adjustment is already created")
+      end
     end
   end
 

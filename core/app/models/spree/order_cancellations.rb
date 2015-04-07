@@ -24,7 +24,7 @@ class Spree::OrderCancellations
         reason: Spree::UnitCancel::SHORT_SHIP,
         created_by: whodunnit,
       )
-      unit_cancel.adjust
+      unit_cancel.adjust!
       inventory_unit.cancel!
     end
   end
