@@ -8,9 +8,10 @@ module Spree
       end
 
       def short_ship
-        inventory_units = Spree::InventoryUnit.where(id: params[:inventory_unit_ids])
+        inventory_unit_ids = params[:inventory_unit_ids] || []
+        inventory_units = Spree::InventoryUnit.where(id: inventory_unit_ids)
 
-        if inventory_units.size != params[:inventory_unit_ids].size
+        if inventory_units.size != inventory_unit_ids.size
           flash[:error] = Spree.t(:unable_to_find_all_inventory_units)
           redirect_to admin_order_cancellations_path(@order)
         elsif inventory_units.empty?

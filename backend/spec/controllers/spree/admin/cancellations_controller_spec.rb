@@ -23,7 +23,7 @@ describe Spree::Admin::CancellationsController do
     let(:referer) { "order_admin_page" }
 
     context "no inventory unit ids are provided" do
-      let(:inventory_units) { [] }
+      subject { spree_post :short_ship, order_id: order.number }
 
       it "redirects back" do
         subject
