@@ -54,7 +54,7 @@
     width: 90px;
   }
   .variant-image-container {
-    width: 385px;  
+    width: 385px;
   }
   .variant-options-cell {
     width: 170px;
@@ -99,6 +99,10 @@
     }
     .variant-image {
       width: 35%;
+      img {
+        width: 100px;
+        height: 100px;
+      }
     }
     .variant-details {
       width: 65%;

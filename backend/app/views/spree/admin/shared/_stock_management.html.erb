@@ -68,9 +68,9 @@
         <td colspan="3" class="stock_location_info">
           <table class="stock_location_table" id="stock-table-variant-<%= variant.id %>">
             <tbody>
-              <%- locations_without_items = @stock_locations - variant.stock_items.flat_map(&:stock_location) %>
+              <%- locations_without_items = @stock_item_stock_locations - variant.stock_items.flat_map(&:stock_location) %>
               <% variant.stock_items.each do |item| %>
-                <% if @stock_locations.include?(item.stock_location) %>
+                <% if @stock_item_stock_locations.include?(item.stock_location) %>
                   <tr id="stock-item-<%= item.id %>" class="<%= cycle('odd', 'even', :name => 'stock_locations')%>">
                     <td class="align-center" class='location-name-cell'><%= item.stock_location.name %></td>
                     <td class="align-center count-cell" id="count-on-hand-<%= item.id %>">
