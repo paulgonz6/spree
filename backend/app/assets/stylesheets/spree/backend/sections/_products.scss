@@ -39,6 +39,31 @@
     display: none;
   }
 
+  .location-header {
+    width: 212px;
+  }
+  .location-name-cell {
+    width: 210px;
+  }
+  .stock-select {
+    width: 188px
+  }
+  .actions,
+  .count-cell,
+  .count-header {
+    width: 90px;
+  }
+  .variant-image-container {
+    width: 385px;  
+  }
+  .variant-options-cell {
+    width: 170px;
+    padding: 7px 10px;
+  }
+  .variant-option-type-cell {
+    width: 60px;
+  }
+
   > tbody {
     > tr {
       > td {
@@ -105,6 +130,15 @@
     &.stock_location_info {
       padding: 0;
       border: none;
+
+      input.error {
+        border-color: $color-error;
+      }
+
+      .select2-container.error {
+        border-radius: 4px;
+        border: 1px solid $color-error;
+      }
 
       table {
         margin-bottom: 0;
