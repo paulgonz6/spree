@@ -68,7 +68,6 @@ module Spree
       end
 
       def stock
-        @hide_out_of_stock = params[:hide_out_of_stock]
         if @stock_locations.empty?
           flash[:error] = Spree.t(:stock_management_requires_a_stock_location)
           redirect_to admin_stock_locations_path

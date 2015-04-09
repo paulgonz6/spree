@@ -27,13 +27,15 @@ $(document).ready ->
   $('body').on 'click', '#listing_product_stock .fa-check', (ev) ->
     ev.preventDefault()
     stockItemId = $(ev.currentTarget).data('id')
-    stockLocationId = $(ev.currentTarget).data('location_id')
+    stockLocationId = $(ev.currentTarget).data('location-id')
     countOnHandDiff = calculateCountOnHandDiff(stockItemId)
+    backorderable = $("#backorderable-#{stockItemId}").is(":checked")
     Spree.ajax
       url: "#{Spree.routes.stock_items_api(stockLocationId)}/#{stockItemId}"
       type: "PUT"
       data:
         stock_item:
+          backorderable: backorderable
           count_on_hand: countOnHandDiff
       success: (stockItem) =>
         updateSuccessHandler(stockItem)
@@ -52,12 +54,14 @@ $(document).ready ->
     return if addStockItemHasErrors(locationSelectContainer, countInput)
 
     stockLocationId = locationSelect.val()
+    backorderable = $("#variant-backorderable-#{variantId}").is(":checked")
     Spree.ajax
       url: "#{Spree.routes.stock_items_api(stockLocationId)}"
       type: "POST"
       data:
         stock_item:
           variant_id: variantId
+          backorderable: backorderable
           count_on_hand: countInput.val()
       success: (stockItem) =>
         createSuccessHandler(stockItem)
@@ -111,19 +115,21 @@ $(document).ready ->
     variantId = stockItem.variant_id
     stockLocationId = stockItem.stock_location_id
     stockLocationSelect = $("#variant-stock-location-#{variantId}")
+    authenticityToken = $("input[name='authenticity_token']:first").val()
     
     selectedStockLocationOption = stockLocationSelect.find("option[value='#{stockLocationId}']")
     stockLocationName = selectedStockLocationOption.text().trim()
     selectedStockLocationOption.remove()
     
     rowTemplate = Handlebars.compile($('#stock-item-count-for-location-template').html())
-    $("#stock-table-variant-#{variantId} tr:last").before(
+    $("tr[data-variant-id='#{variantId}']:last").before(
       rowTemplate
         id: stockItem.id
         variantId: variantId
         stockLocationId: stockLocationId
         stockLocationName: stockLocationName
         countOnHand: stockItem.count_on_hand
+        authenticityToken: authenticityToken
     )
     resetTableRowStyling(variantId)
 
@@ -132,6 +138,8 @@ $(document).ready ->
     else
       stockLocationSelect.select2()
       $("#variant-count-on-hand-#{variantId}").val("")
+
+    resetParentRowspan(variantId)
 
   resetAddStockItemValidationErrors = (locationSelectContainer, countInput) ->
     countInput.removeClass('error')
@@ -148,8 +156,12 @@ $(document).ready ->
     locationSelectContainer.hasClass('error') or countInput.hasClass('error')
 
   resetTableRowStyling = (variantId) ->
-    tableRows = $("#stock-table-variant-#{variantId} tr")
+    tableRows = $("tr[data-variant-id='#{variantId}']")
     tableRows.removeClass('even odd')
     for i in [0..tableRows.length]
       rowClass = if (i + 1) % 2 is 0 then 'even' else 'odd'
       tableRows.eq(i).addClass(rowClass)
+
+  resetParentRowspan = (variantId) ->
+    newRowspan = $("tr[data-variant-id='#{variantId}']").length + 1
+    $("#spree_variant_#{variantId} > td").attr('rowspan', newRowspan)

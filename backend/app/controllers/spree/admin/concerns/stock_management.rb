@@ -31,7 +31,7 @@ module Spree
           else
             Spree::Core::Search::Variant.new(params[:variant_search_term], scope: variant_scope).results
           end
-          @variants = results.order("created_at DESC").page(params[:page]).per(params[:per_page] || Spree::Config[:orders_per_page])
+          @variants = results.order(:sku).page(params[:page]).per(params[:per_page] || Spree::Config[:orders_per_page])
         end
       end
     end
