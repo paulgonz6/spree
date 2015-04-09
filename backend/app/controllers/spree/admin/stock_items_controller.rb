@@ -1,18 +1,10 @@
 module Spree
   module Admin
     class StockItemsController < Spree::Admin::BaseController
-      before_filter :load_stock_locations, only: :index
-      before_filter :load_stock_item_stock_locations, only: :index
-      before_filter :determine_backorderable, only: :update
+      include Spree::Admin::Concerns::StockManagement
 
-      def index
-        results = if params[:variant_search_term].blank?
-          variant_scope
-        else
-          Spree::Core::Search::Variant.new(params[:variant_search_term], scope: variant_scope).results
-        end
-        @variants = results.order("created_at DESC").page(params[:page]).per(params[:per_page] || Spree::Config[:orders_per_page])
-      end
+      before_filter :determine_backorderable, only: :update
+      before_filter :load_stock_management_data, only: :index
 
       def update
         stock_item.save
@@ -60,19 +52,6 @@ module Spree
 
         def determine_backorderable
           stock_item.backorderable = params[:stock_item].present? && params[:stock_item][:backorderable].present?
-        end
-
-        def load_stock_locations
-          @stock_locations = Spree::StockLocation.accessible_by(current_ability, :read).all
-        end
-
-        def load_stock_item_stock_locations
-          selected_stock_location = find_selected_stock_location
-          @stock_item_stock_locations = selected_stock_location.present? ? [selected_stock_location] : @stock_locations
-        end
-
-        def find_selected_stock_location
-          @stock_locations.find { |sl| sl.id == params[:stock_location_id].to_i }
         end
 
         def variant_scope

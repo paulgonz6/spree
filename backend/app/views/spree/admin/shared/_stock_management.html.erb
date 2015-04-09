@@ -24,7 +24,7 @@
     </tr>
   </thead>
   <tbody>
-    <% @variants.each do |variant| %>
+    <% variants.each do |variant| %>
       <% next if variant.stock_items.to_a.sum(&:count_on_hand) == 0 && @hide_out_of_stock %>
 
       <tr id="<%= spree_dom_id variant %>" class='stock_item_row' data-hook="admin_product_stock_management_index_rows">
@@ -68,6 +68,7 @@
         <td colspan="3" class="stock_location_info">
           <table class="stock_location_table" id="stock-table-variant-<%= variant.id %>">
             <tbody>
+              <%- @stock_item_stock_locations ||= [] %>
               <%- locations_without_items = @stock_item_stock_locations - variant.stock_items.flat_map(&:stock_location) %>
               <% variant.stock_items.each do |item| %>
                 <% if @stock_item_stock_locations.include?(item.stock_location) %>
