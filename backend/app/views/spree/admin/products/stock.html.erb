@@ -16,11 +16,7 @@
 
 <% content_for :fullwidth_content_with_sidebar do %>
   <% if @variants.any? %>
-    <%= paginate @variants %>
-
     <%= render :partial => 'spree/admin/shared/stock_management', :locals => { :variants => @variants } %>
-
-    <%= paginate @variants %>
   <% else %>
     <div class="fullwidth no-objects-found">
       <%= Spree.t(:no_variants_found) %>
