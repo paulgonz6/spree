@@ -97,6 +97,9 @@
 
     &.location-name-cell {
       border-left: none;
+      .select2-container {
+        width: 180px;
+      }
     }
 
     input.error {

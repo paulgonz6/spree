@@ -1,13 +1,3 @@
-jQuery ->
-  $('.stock_item_backorderable').on 'click', ->
-    $(@).parent('form').submit()
-  $('.toggle_stock_item_backorderable').on 'submit', ->
-    Spree.ajax
-      type: @method
-      url: @action
-      data: $(@).serialize()
-    false
-
 $(document).ready ->
   return unless $('#listing_product_stock').length > 0
   
@@ -29,7 +19,7 @@ $(document).ready ->
     stockItemId = $(ev.currentTarget).data('id')
     stockLocationId = $(ev.currentTarget).data('location-id')
     countOnHandDiff = calculateCountOnHandDiff(stockItemId)
-    backorderable = $("#backorderable-#{stockItemId}").is(":checked")
+    backorderable = $("#backorderable-#{stockItemId}").prop("checked")
     Spree.ajax
       url: "#{Spree.routes.stock_items_api(stockLocationId)}/#{stockItemId}"
       type: "PUT"
@@ -54,7 +44,7 @@ $(document).ready ->
     return if addStockItemHasErrors(locationSelectContainer, countInput)
 
     stockLocationId = locationSelect.val()
-    backorderable = $("#variant-backorderable-#{variantId}").is(":checked")
+    backorderable = $("#variant-backorderable-#{variantId}").prop("checked")
     Spree.ajax
       url: "#{Spree.routes.stock_items_api(stockLocationId)}"
       type: "POST"
@@ -76,8 +66,10 @@ $(document).ready ->
     toggleReadOnlyElements(stockItemId, false)
 
   toggleReadOnlyElements = (stockItemId, show) ->
+    disabledValue = if show then 'disabled' else null
     textCssDisplay = if show then 'block' else 'none'
     toggleButtonVisibility('edit', stockItemId, show)
+    $("#backorderable-#{stockItemId}").prop('disabled', disabledValue)
     $("#count-on-hand-#{stockItemId} span").css('display', textCssDisplay)
 
   showEditForm = (stockItemId) ->
@@ -87,9 +79,11 @@ $(document).ready ->
     toggleEditFormVisibility(stockItemId, false)
 
   toggleEditFormVisibility = (stockItemId, show) ->
+    disabledValue = if show then null else 'disabled'
     inputCssDisplay = if show then 'block' else 'none'
     toggleButtonVisibility('void', stockItemId, show)
     toggleButtonVisibility('check', stockItemId, show)
+    $("#backorderable-#{stockItemId}").prop('disabled', disabledValue)
     $("#count-on-hand-#{stockItemId} input[type='number']").css('display', inputCssDisplay)
 
   toggleButtonVisibility = (buttonIcon, stockItemId, show) ->
@@ -129,7 +123,7 @@ $(document).ready ->
         stockLocationId: stockLocationId
         stockLocationName: stockLocationName
         countOnHand: stockItem.count_on_hand
-        authenticityToken: authenticityToken
+        backorderable: stockItem.backorderable
     )
     resetTableRowStyling(variantId)
 

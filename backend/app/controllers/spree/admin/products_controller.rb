@@ -134,7 +134,7 @@ module Spree
         end
 
         def variant_scope
-          Spree::Variant.where(product_id: @product.id)
+          @product.variants
         end
     end
   end

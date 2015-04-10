@@ -4,12 +4,22 @@ module Spree
       module StockManagement
         extend ActiveSupport::Concern
 
+        @@variant_display_attributes = [
+          { string_key: :sku, attr_name: :sku },
+          { string_key: :name, attr_name: :name }
+        ]
+
+        def self.set_variant_display_attributes(display_attributes)
+          @@variant_display_attributes = display_attributes
+        end
+
         private
 
         def load_stock_management_data
           load_stock_locations
           load_stock_item_stock_locations
           load_filtered_variants
+          load_variant_attributes_to_display
         end
 
         def load_stock_locations
@@ -31,7 +41,11 @@ module Spree
           else
             Spree::Core::Search::Variant.new(params[:variant_search_term], scope: variant_scope).results
           end
-          @variants = results.order(:sku).page(params[:page]).per(params[:per_page] || Spree::Config[:orders_per_page])
+          @variants = results.order(id: :desc).page(params[:page]).per(params[:per_page] || Spree::Config[:orders_per_page])
+        end
+
+        def load_variant_attributes_to_display
+          @variant_display_attributes = @@variant_display_attributes
         end
       end
     end

@@ -144,6 +144,7 @@ module Spree
               id: stock_item.to_param,
               stock_item: {
                 count_on_hand: 40,
+                backorderable: true
               }
             }
           end
@@ -152,6 +153,7 @@ module Spree
             subject
             expect(response.status).to eq 200
             expect(json_response['count_on_hand']).to eq 50
+            expect(json_response['backorderable']).to eq true
           end
 
           context 'tracking inventory' do
