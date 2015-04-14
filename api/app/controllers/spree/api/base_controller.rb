@@ -1,9 +1,15 @@
-require_dependency 'spree/api/controller_setup'
+require 'spree/api/responders'
 
 module Spree
   module Api
     class BaseController < ActionController::Base
-      include Spree::Api::ControllerSetup
+      prepend_view_path Rails.root + "app/views"
+      append_view_path File.expand_path("../../../app/views", File.dirname(__FILE__))
+
+      self.responder = Spree::Api::Responders::AppResponder
+      respond_to :json
+
+      include CanCan::ControllerAdditions
       include Spree::Core::ControllerHelpers::SSL
       include Spree::Core::ControllerHelpers::StrongParameters
 
@@ -35,11 +41,17 @@ module Spree
 
       # users should be able to set price when importing orders via api
       def permitted_line_item_attributes
-        if current_api_user.has_spree_role?("admin")
+        if is_admin?
           super + admin_line_item_attributes
         else
           super
         end
+      end
+
+      protected
+
+      def is_admin?
+        current_api_user && current_api_user.has_spree_role?("admin")
       end
 
       private
@@ -64,9 +76,6 @@ module Spree
             render "spree/api/errors/must_specify_api_key", :status => 401 and return
           elsif order_token.blank? && (requires_authentication? || api_key.present?)
             render "spree/api/errors/invalid_api_key", :status => 401 and return
-          else
-            # An anonymous user
-            @current_api_user = Spree.user_class.new
           end
         end
       end
@@ -124,7 +133,7 @@ module Spree
 
       def product_scope
         variants_associations = [{ option_values: :option_type }, :default_price, :prices, :images]
-        if current_api_user.has_spree_role?("admin")
+        if is_admin?
           scope = Product.with_deleted.accessible_by(current_ability, :read)
             .includes(:properties, :option_types, variants: variants_associations, master: variants_associations)
 

@@ -32,8 +32,9 @@ describe Spree::OrderShipping do
     end
 
     it "updates shipment.shipped_at" do
-      future = Timecop.freeze
-      expect { subject }.to change { shipment.shipped_at }.from(nil).to(future)
+      Timecop.freeze do |now|
+        expect { subject }.to change { shipment.shipped_at }.from(nil).to(now)
+      end
     end
 
     it "updates order.updated_at" do
@@ -105,6 +106,20 @@ describe Spree::OrderShipping do
     let(:shipment) { order.shipments.to_a.first }
 
     it_behaves_like 'shipment shipping'
+
+    context "when not all units are shippable" do
+      let(:order) { create(:order_ready_to_ship, line_items_count: 2) }
+      let(:shippable_line_item) { order.line_items.first }
+      let(:unshippable_line_item) { order.line_items.last }
+
+      before do
+        unshippable_line_item.inventory_units.each(&:cancel!)
+      end
+
+      it "only ships the shippable ones" do
+        expect(subject.inventory_units).to match_array(shippable_line_item.inventory_units)
+      end
+    end
 
     context "with an external_number" do
       subject do

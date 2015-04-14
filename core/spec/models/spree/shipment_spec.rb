@@ -368,7 +368,13 @@ describe Spree::Shipment do
 
   context "#ship" do
     context "when the shipment is canceled" do
-      let(:shipment_with_inventory_units) { create(:shipment, order: create(:order_with_line_items), state: 'canceled') }
+      let(:shipment_with_inventory_units) do
+        create(
+          :shipment,
+          order: create(:order_with_line_items, line_items_count: 2),
+          state: 'canceled',
+        )
+      end
       let(:subject) { shipment_with_inventory_units.ship! }
       before do
         order.stub(:update!)
@@ -376,7 +382,7 @@ describe Spree::Shipment do
       end
 
       it 'unstocks them items' do
-        shipment_with_inventory_units.stock_location.should_receive(:unstock).exactly(5).times
+        shipment_with_inventory_units.stock_location.should_receive(:unstock).exactly(2).times
         subject
       end
     end
