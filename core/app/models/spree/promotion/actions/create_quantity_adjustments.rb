@@ -4,6 +4,7 @@ module Spree::Promotion::Actions
 
     preference :group_size, :integer, default: 1
 
+    ##
     # Computes the amount for the adjustment based on the line item and any
     # other applicable items in the order. The rules for this specific
     # adjustment are as follows:
@@ -50,16 +51,18 @@ module Spree::Promotion::Actions
     # adjustment. +adjustment_amount * 3+ or $15.
     #
     def compute_amount(line_item)
-      adjustment_amount = calculator.compute(line_item).to_f.abs
+      adjustment_amount = calculator.compute(PartialLineItem.new(line_item)).to_f.abs
 
       order = line_item.order
       line_items = actionable_line_items(order)
 
-      all_matching_adjustments = order.line_item_adjustments.select { |a| a.source == self }
-      other_adjustments = all_matching_adjustments - line_item.adjustments
+      actioned_line_items = order.line_item_adjustments.
+        select { |a| a.source == self && a.amount < 0 }.
+        map(&:adjustable)
+      other_line_items = actioned_line_items - [line_item]
 
       applicable_quantity = total_applicable_quantity(line_items)
-      used_quantity = other_adjustments.sum(&:amount) / adjustment_amount * -1
+      used_quantity = other_line_items.sum(&:quantity)
       usable_quantity = [
         applicable_quantity - used_quantity,
         line_item.quantity
@@ -84,10 +87,20 @@ module Spree::Promotion::Actions
       total_quantity - extra_quantity
     end
 
-    # Overriden since we don't currently support percent.
-    def ensure_action_has_calculator
-      return if self.calculator
-      self.calculator = Calculator::FlatRate.new
+    ##
+    # Used specifically for PercentOnLineItem calculator. That calculator uses
+    # `line_item.amount`, however we might not necessarily want to discount the
+    # entire amount. This class allows us to determine the discount per
+    # quantity and then calculate the adjustment amount the way we normally do
+    # for flat rate adjustments.
+    class PartialLineItem
+      def initialize(line_item)
+        @line_item = line_item
+      end
+
+      def amount
+        @line_item.price
+      end
     end
   end
 end
