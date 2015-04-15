@@ -55,7 +55,7 @@ module Spree::Promotion::Actions
       order = line_item.order
       line_items = actionable_line_items(order)
 
-      all_matching_adjustments = (order.line_item_adjustments & adjustments)
+      all_matching_adjustments = order.line_item_adjustments.select { |a| a.source == self }
       other_adjustments = all_matching_adjustments - line_item.adjustments
 
       applicable_quantity = total_applicable_quantity(line_items)
@@ -82,6 +82,12 @@ module Spree::Promotion::Actions
       extra_quantity = total_quantity % preferred_group_size
 
       total_quantity - extra_quantity
+    end
+
+    # Overriden since we don't currently support percent.
+    def ensure_action_has_calculator
+      return if self.calculator
+      self.calculator = Calculator::FlatRate.new
     end
   end
 end
