@@ -1,5 +1,5 @@
 FactoryGirl.define do
-  factory :calculator, class: Spree::Calculator::FlatRate do
+  factory :calculator, aliases: [:flat_rate_calculator], class: Spree::Calculator::FlatRate do
     preferred_amount 10.0
   end
 

@@ -8,7 +8,7 @@ module Spree::Promotion::Actions
     let(:order) { FactoryGirl.create :order }
     let(:promotion) { FactoryGirl.create :promotion }
 
-    let(:calculator) { FactoryGirl.create :calculator, preferred_amount: 5 }
+    let(:calculator) { FactoryGirl.create :flat_rate_calculator, preferred_amount: 5 }
 
     describe "#perform" do
       subject { action.perform(payload) }
