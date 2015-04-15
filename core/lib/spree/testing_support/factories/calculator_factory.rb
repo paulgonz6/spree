@@ -9,4 +9,8 @@ FactoryGirl.define do
 
   factory :default_tax_calculator, class: Spree::Calculator::DefaultTax do
   end
+
+  factory :percent_on_item_calculator, class: Spree::Calculator::PercentOnLineItem do
+    preferred_percent 10
+  end
 end
