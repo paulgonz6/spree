@@ -11,6 +11,7 @@ module Spree
 
     has_many :adjustments, as: :adjustable, dependent: :destroy
     has_many :inventory_units, inverse_of: :line_item
+    has_many :inventory_unit_captures, through: :inventory_units
 
     before_validation :copy_price
     before_validation :copy_tax_category

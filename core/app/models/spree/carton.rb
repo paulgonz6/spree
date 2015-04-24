@@ -6,6 +6,7 @@ class Spree::Carton < ActiveRecord::Base
   has_many :inventory_units, inverse_of: :carton
   has_many :orders, -> { uniq }, through: :inventory_units
   has_many :shipments, -> { uniq }, through: :inventory_units
+  has_many :carton_captures, inverse_of: :carton
 
   validates :address, presence: true
   validates :stock_location, presence: true

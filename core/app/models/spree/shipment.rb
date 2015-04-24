@@ -13,6 +13,8 @@ module Spree
     has_many :adjustments, as: :adjustable, dependent: :delete_all
     has_many :cartons, -> { uniq }, through: :inventory_units
 
+    has_one :shipment_capture, inverse_of: :shipment
+
     after_save :update_adjustments
 
     before_validation :set_cost_zero_when_nil

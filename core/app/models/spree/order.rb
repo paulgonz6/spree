@@ -70,6 +70,7 @@ module Spree
         pluck(:state).uniq
       end
     end
+    has_many :inventory_unit_captures, through: :line_items
 
     accepts_nested_attributes_for :line_items
     accepts_nested_attributes_for :bill_address
