@@ -4,6 +4,9 @@ module Spree::Promotion::Actions
 
     preference :group_size, :integer, default: 1
 
+    has_many :line_item_actions, foreign_key: :action_id
+    has_many :line_items, through: :line_item_actions
+
     ##
     # Computes the amount for the adjustment based on the line item and any
     # other applicable items in the order. The rules for this specific
@@ -62,11 +65,13 @@ module Spree::Promotion::Actions
       other_line_items = actioned_line_items - [line_item]
 
       applicable_quantity = total_applicable_quantity(line_items)
-      used_quantity = other_line_items.sum(&:quantity)
+      used_quantity = total_used_quantity(other_line_items)
       usable_quantity = [
         applicable_quantity - used_quantity,
         line_item.quantity
       ].min
+
+      persist_quantity(usable_quantity,  line_item)
 
       amount = adjustment_amount * usable_quantity
       [line_item.amount, amount].min * -1
@@ -85,6 +90,20 @@ module Spree::Promotion::Actions
       extra_quantity = total_quantity % preferred_group_size
 
       total_quantity - extra_quantity
+    end
+
+    def total_used_quantity(line_items)
+      line_item_actions.where(
+        line_item_id: line_items.map(&:id)
+      ).sum(:quantity)
+    end
+
+    def persist_quantity(quantity, line_item)
+      line_item_actions.where(
+        line_item_id: line_item.id
+      ).first_or_create! do |line_item_action|
+        line_item_action.quantity = quantity
+      end
     end
 
     ##
