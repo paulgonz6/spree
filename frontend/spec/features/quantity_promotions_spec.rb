@@ -13,6 +13,7 @@ RSpec.feature "Quantity Promotions" do
 
   background do
     FactoryGirl.create(:product, name: "DL-44")
+    FactoryGirl.create(:product, name: "E-11")
     promotion.actions << action
 
     visit spree.root_path
@@ -56,6 +57,32 @@ RSpec.feature "Quantity Promotions" do
     # Bump quantity to 4, making promotion apply "twice."
     fill_in "order_line_items_attributes_0_quantity", with: 4
     click_button "Update"
+    within("#cart_adjustments") do
+      expect(page).to have_content("-$20.00")
+    end
+  end
+
+  # Catches an earlier issue with quantity calculation.
+  scenario "adding odd numbers of items to the cart" do
+    # Bump quantity to 3
+    fill_in "order_line_items_attributes_0_quantity", with: 3
+    click_button "Update"
+
+    # Apply the promo code and see a $10 discount (for 2 of the 3 items)
+    fill_in "Coupon code", with: "PROMO"
+    click_button "Update"
+    expect(page).to have_content("The coupon code was successfully applied to your order")
+    within("#cart_adjustments") do
+      expect(page).to have_content("-$10.00")
+    end
+
+    # Add a different product to our cart with quantity of 2.
+    visit spree.root_path
+    click_link "E-11"
+    fill_in "quantity", with: "2"
+    click_button "Add To Cart"
+
+    # We now have 5 items total, so discount should increase.
     within("#cart_adjustments") do
       expect(page).to have_content("-$20.00")
     end
