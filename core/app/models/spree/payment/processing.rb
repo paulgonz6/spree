@@ -38,8 +38,8 @@ module Spree
       # Takes the amount in cents to capture.
       # Can be used to capture partial amounts of a payment.
       def capture!(amount=nil)
-        amount ||= money.money.cents
         return true if completed?
+        amount ||= money.money.cents
         started_processing!
         protect_from_connection_error do
           check_environment
@@ -52,6 +52,7 @@ module Spree
 
           money = ::Money.new(amount, Spree::Config[:currency])
           capture_events.create!(amount: money.to_f)
+          split_uncaptured_amount
           handle_response(response, :complete, :failure)
         end
       end

@@ -24,6 +24,62 @@ describe Spree::Shipment do
   let(:variant) { mock_model(Spree::Variant) }
   let(:line_item) { mock_model(Spree::LineItem, variant: variant) }
 
+
+  describe '#determine_state' do
+    subject do
+      shipment.determine_state(order)
+    end
+
+    context 'order is canceled' do
+      it 'returns canceled' do
+        order.stub canceled?: true
+        is_expected.to eq 'canceled'
+      end
+    end
+
+    context 'order can not ship' do
+      it 'returns pending' do
+        order.stub can_ship?: false
+        is_expected.to eq 'pending'
+      end
+    end
+
+    context 'some inventory is backordered' do
+      it 'returns pending' do
+        shipment.stub inventory_units: [mock_model(Spree::InventoryUnit, backordered?: true)]
+        is_expected.to eq 'pending'
+      end
+    end
+
+    context 'it is shipped' do
+      it 'returns shipped' do
+        shipment.stub state: 'shipped'
+        is_expected.to eq 'shipped'
+      end
+    end
+
+    context 'it is unpaid' do
+      let(:order) { create(:order_with_line_items) }
+
+      it 'returns pending' do
+        is_expected.to eq 'pending'
+      end
+    end
+
+    context 'it is paid' do
+      it 'returns ready' do
+        is_expected.to eq 'ready'
+      end
+    end
+
+    context "Config.auto_capture_at_ship is turned on" do
+      it 'returns ready' do
+        Spree::Config.auto_capture_at_ship = true
+        is_expected.to eq 'ready'
+      end
+    end
+  end
+
   # Regression test for #4063
   context "number generation" do
     before do

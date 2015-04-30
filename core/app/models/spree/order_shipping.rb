@@ -71,6 +71,7 @@ class Spree::OrderShipping
       end
     end
 
+    Spree::CartonCapturing.new(carton).capture if Spree::Config[:auto_capture_at_ship]
     send_shipment_email(carton) if stock_location.fulfillable? # e.g. digital gift cards that aren't actually shipped
     fulfill_order_stock_locations(stock_location)
     update_order_state

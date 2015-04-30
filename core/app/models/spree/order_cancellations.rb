@@ -18,14 +18,23 @@ class Spree::OrderCancellations
   private
 
   def short_ship_unit(inventory_unit, whodunnit:nil)
+    calculator = Spree::UnprocessedInventoryUnitAmountCalculator.new(inventory_unit)
+
     Spree::InventoryUnit.transaction do
       unit_cancel = Spree::UnitCancel.create!(
         inventory_unit: inventory_unit,
+        price: calculator.price_total,
+        promo_total: calculator.promotion_total,
+        additional_tax_total: calculator.additional_tax_total,
+        included_tax_total: calculator.included_tax_total,
+        order_adjustment_total: calculator.order_adjustment_total,
         reason: Spree::UnitCancel::SHORT_SHIP,
         created_by: whodunnit,
       )
+
       unit_cancel.adjust!
       inventory_unit.cancel!
+      return unit_cancel
     end
   end
 end

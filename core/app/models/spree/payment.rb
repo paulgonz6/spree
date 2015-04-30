@@ -151,8 +151,26 @@ module Spree
       return true
     end
 
+    def captured_amount
+      capture_events.sum(:amount)
+    end
+
     def uncaptured_amount
-      amount - capture_events.sum(:amount)
+      amount - captured_amount
+    end
+
+    def split_uncaptured_amount
+      if uncaptured_amount > 0
+        order.payments.create! amount: uncaptured_amount,
+                               avs_response: avs_response,
+                               cvv_response_code: cvv_response_code,
+                               cvv_response_message: cvv_response_message,
+                               payment_method: payment_method,
+                               response_code: response_code,
+                               source: source,
+                               state: 'pending'
+        update_attributes(amount: captured_amount)
+      end
     end
 
     private

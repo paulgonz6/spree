@@ -3,7 +3,7 @@
 # This class should encapsulate logic related to canceling inventory after order complete
 class Spree::UnitCancel < ActiveRecord::Base
   SHORT_SHIP = 'Short Ship'
-  belongs_to :inventory_unit
+  belongs_to :inventory_unit, inverse_of: :unit_cancel
   has_one :adjustment, as: :source, dependent: :destroy
 
   validates :inventory_unit, presence: true
@@ -27,6 +27,6 @@ class Spree::UnitCancel < ActiveRecord::Base
   # This method is used by Adjustment#update to recalculate the cost.
   def compute_amount(line_item)
     raise "Adjustable does not match line item" unless line_item == inventory_unit.line_item
-    -(line_item.total.to_d / line_item.inventory_units.not_canceled.reject(&:original_return_item ).size)
+    -(price + promo_total + additional_tax_total + included_tax_total + order_adjustment_total)
   end
 end

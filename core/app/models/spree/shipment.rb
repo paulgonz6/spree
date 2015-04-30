@@ -221,7 +221,7 @@ module Spree
       return 'pending' unless order.can_ship?
       return 'pending' if inventory_units.any? &:backordered?
       return 'shipped' if state == 'shipped'
-      order.paid? ? 'ready' : 'pending'
+      order.paid? || Spree::Config[:auto_capture_at_ship] ? 'ready' : 'pending'
     end
 
     def tracking_url

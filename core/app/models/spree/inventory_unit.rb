@@ -13,6 +13,8 @@ module Spree
     has_many :return_items, inverse_of: :inventory_unit, dependent: :destroy
     has_one :original_return_item, class_name: "Spree::ReturnItem", foreign_key: :exchange_inventory_unit_id, dependent: :destroy
     has_one :inventory_unit_capture, inverse_of: :inventory_unit
+    has_one :carton_capture, through: :inventory_unit_capture
+    has_one :unit_cancel, inverse_of: :inventory_unit
 
     scope :backordered, -> { where state: 'backordered' }
     scope :on_hand, -> { where state: 'on_hand' }
