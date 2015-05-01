@@ -32,7 +32,7 @@ module Spree
             order.reload
           rescue Exception => e
             order.destroy if order && order.persisted?
-            raise e.message
+            raise e
           end
         end
 
