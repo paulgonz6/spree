@@ -28,7 +28,10 @@ describe Spree::UnprocessedInventoryUnitAmountCalculator do
       let!(:inventory_unit2) { create(:inventory_unit, line_item: inventory_unit.line_item, order: inventory_unit.order) }
       let(:carton1) { create(:carton, inventory_units: [inventory_unit2]) }
 
-      before { Spree::CartonCapturing.new(carton1).capture }
+      before do
+        allow_any_instance_of(Spree::CartonPaymentStrategy).to receive(:capture_payments)
+        Spree::CartonCapturing.new(carton1).capture
+      end
 
       it "calculates the promotion total based on captured inventory" do
         expect(subject).to eq 4.55
@@ -59,7 +62,10 @@ describe Spree::UnprocessedInventoryUnitAmountCalculator do
       let!(:inventory_unit2) { create(:inventory_unit, line_item: inventory_unit.line_item, order: inventory_unit.order) }
       let(:carton1) { create(:carton, inventory_units: [inventory_unit2]) }
 
-      before { Spree::CartonCapturing.new(carton1).capture }
+      before do
+        allow_any_instance_of(Spree::CartonPaymentStrategy).to receive(:capture_payments)
+        Spree::CartonCapturing.new(carton1).capture
+      end
 
       it "calculates the promotion total based on captured inventory" do
         expect(subject).to eq 4.55
@@ -91,7 +97,10 @@ describe Spree::UnprocessedInventoryUnitAmountCalculator do
       let!(:inventory_unit2) { create(:inventory_unit, line_item: inventory_unit.line_item, order: inventory_unit.order) }
       let(:carton1) { create(:carton, inventory_units: [inventory_unit2]) }
 
-      before { Spree::CartonCapturing.new(carton1).capture }
+      before do
+        allow_any_instance_of(Spree::CartonPaymentStrategy).to receive(:capture_payments)
+        Spree::CartonCapturing.new(carton1).capture
+      end
 
       it "calculates the tax total based on captured inventory" do
         expect(subject).to eq 4.55
@@ -122,7 +131,10 @@ describe Spree::UnprocessedInventoryUnitAmountCalculator do
       let!(:inventory_unit2) { create(:inventory_unit, line_item: inventory_unit.line_item, order: inventory_unit.order) }
       let(:carton1) { create(:carton, inventory_units: [inventory_unit2]) }
 
-      before { Spree::CartonCapturing.new(carton1).capture }
+      before do
+        allow_any_instance_of(Spree::CartonPaymentStrategy).to receive(:capture_payments)
+        Spree::CartonCapturing.new(carton1).capture
+      end
 
       it "calculates the tax total based on captured inventory" do
         expect(subject).to eq 4.55
@@ -134,7 +146,10 @@ describe Spree::UnprocessedInventoryUnitAmountCalculator do
     subject { calculator }
     let(:carton1) { create(:carton, inventory_units: [inventory_unit]) }
 
-    before { Spree::CartonCapturing.new(carton1).capture }
+    before do
+      allow_any_instance_of(Spree::CartonPaymentStrategy).to receive(:capture_payments)
+      Spree::CartonCapturing.new(carton1).capture
+    end
 
     it "raises an error when initializing" do
       expect { subject }.to raise_error(Spree::UnprocessedInventoryUnitAmountCalculator::InventoryPreviouslyProcessedError)

@@ -19,7 +19,7 @@ describe Spree::CartonCapture do
     end
 
     it "sums it's inventory unit captures breakdown totals" do
-      expect(subject).to eq 33.0
+      expect(subject).to eq 26.4
     end
   end
 end

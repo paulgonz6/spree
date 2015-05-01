@@ -61,5 +61,83 @@ describe Spree::OrderCancellations do
         expect(line_item.total).to eq 0
       end
     end
+
+
+    context "when exchanges are present" do
+      let!(:order) { create(:order, ship_address: create(:address)) }
+      let!(:product) { create(:product, price: 10.00) }
+      let!(:variant) do
+        create(:variant, price: 10, product: product, track_inventory: false)
+      end
+      let!(:shipping_method) { create(:free_shipping_method) }
+      let(:exchange_variant) do
+        create(:variant, product: variant.product, price: 10, track_inventory: false)
+      end
+
+      before do
+        @old_expedited_exchanges_value = Spree::Config[:expedited_exchanges]
+        Spree::Config[:expedited_exchanges] = true
+      end
+      after do
+        Spree::Config[:expedited_exchanges] = @old_expedited_exchanges_value
+      end
+
+      # This sets up an order with one shipped inventory unit, one unshipped
+      # inventory unit, and one unshipped exchange inventory unit.
+      before do
+        # Complete an order with 1 line item with quantity=2
+        order.contents.add(variant, 2)
+        order.contents.advance
+        create(:payment, order: order, amount: order.total)
+        order.complete!
+        order.reload
+
+        # Ship _one_ of the inventory units
+        @shipment = order.shipments.first
+        @shipped_inventory_unit = order.inventory_units[0]
+        @unshipped_inventory_unit = order.inventory_units[1]
+        order.shipping.ship(
+          inventory_units: [@shipped_inventory_unit],
+          stock_location: @shipment.stock_location,
+          address: order.ship_address,
+          shipping_method: @shipment.shipping_method,
+        )
+
+        # Create an expedited exchange for the shipped inventory unit.
+        # This generates a new inventory unit attached to the existing line item.
+        Spree::ReturnAuthorization.create!(
+          order: order,
+          stock_location: @shipment.stock_location,
+          reason: create(:return_authorization_reason),
+          return_items: [
+            Spree::ReturnItem.new(
+              inventory_unit: @shipped_inventory_unit,
+              exchange_variant: exchange_variant,
+            ),
+          ],
+        )
+        @exchange_inventory_unit = order.inventory_units.reload[2]
+      end
+
+      context 'when canceling an unshipped inventory unit from the original order' do
+        subject do
+          order.cancellations.short_ship([@unshipped_inventory_unit])
+        end
+
+        it "adjusts the order by the inventory unit's value" do
+          expect { subject }.to change { order.total }.by(-10.0)
+        end
+      end
+
+      context 'when canceling an unshipped exchange inventory unit' do
+        subject do
+          order.cancellations.short_ship([@exchange_inventory_unit])
+        end
+
+        it "adjusts the order by the inventory unit's value" do
+          expect { subject }.to change { order.total }.by(-10.0)
+        end
+      end
+    end
   end
 end

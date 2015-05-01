@@ -27,6 +27,6 @@ class Spree::UnitCancel < ActiveRecord::Base
   # This method is used by Adjustment#update to recalculate the cost.
   def compute_amount(line_item)
     raise "Adjustable does not match line item" unless line_item == inventory_unit.line_item
-    -(price + promo_total + additional_tax_total + included_tax_total + order_adjustment_total)
+    -(price + promo_total + additional_tax_total + order_adjustment_total)
   end
 end

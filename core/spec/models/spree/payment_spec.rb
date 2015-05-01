@@ -66,6 +66,21 @@ describe Spree::Payment do
     end
   end
 
+  context "#captured_amount" do
+    context "calculates based on capture events" do
+      it "with 0 capture events" do
+        expect(payment.captured_amount).to eq(0)
+      end
+
+      it "with some capture events" do
+        payment.save
+        payment.capture_events.create!(amount: 2.0)
+        payment.capture_events.create!(amount: 3.0)
+        expect(payment.captured_amount).to eq(5)
+      end
+    end
+  end
+
   context 'validations' do
     it "returns useful error messages when source is invalid" do
       payment.source = Spree::CreditCard.new
@@ -309,9 +324,16 @@ describe Spree::Payment do
             expect(payment.capture_events.first.amount).to eq(50)
           end
 
-          it "stores the uncaptured amount on the payment" do
-            payment.capture!(6000)
-            expect(payment.uncaptured_amount).to eq(40) # 100 - 60 = 40
+          it "should process the first payment and create new pending payment with uncaptured amount" do
+            expect(payment).to receive(:complete!)
+            payment.capture!(3000)
+            order = payment.order
+            payments = order.payments
+
+            expect(payments.size).to eq 2
+            expect(payments.processing.first.amount).to eq 30.0
+            expect(payments.pending.first.amount).to eq 70.0
+            expect(payments.processing.first.source).to eq(payments.pending.first.source)
           end
         end
 

@@ -2,14 +2,26 @@ require 'spec_helper'
 
 describe Spree::CartonCapturing do
   let(:carton_capturing) { Spree::CartonCapturing.new(carton) }
-  let(:order) { create(:order_with_line_items) }
+  let!(:order) { create(:order, ship_address: create(:address)) }
   let(:carton) { Spree::OrderShipping.new(order).ship_shipment(order.shipments.first) }
   let(:shipment) { order.shipments.first }
+  let!(:shipping_method) { create(:free_shipping_method) }
 
   describe "#capture" do
     subject { carton_capturing.capture }
 
     context "a simple order" do
+      let(:product) { create(:product, price: 10.00) }
+      let(:variant) { create(:variant, price: 10, product: product, track_inventory: false) }
+
+      before do
+        order.contents.add(variant, 1)
+        order.contents.advance
+        create(:payment, order: order, amount: order.total)
+        order.complete!
+        order.reload
+      end
+
       it "creates a carton capture" do
         expect { subject }.to change { Spree::CartonCapture.count }.by(1)
       end
@@ -54,12 +66,10 @@ describe Spree::CartonCapturing do
         )
       end
 
-      let!(:order) { create(:order, ship_address: create(:address)) }
       let!(:product) { create(:product, price: 10.00) }
       let!(:variant) do
         create(:variant, price: 10, product: product, track_inventory: false, tax_category: tax_rate.tax_category)
       end
-      let!(:shipping_method) { create(:free_shipping_method) }
       let(:tax_rate) { create(:tax_rate, amount: 0.1, zone: create(:global_zone, name: "Some Tax Zone")) }
 
       before do
@@ -120,7 +130,15 @@ describe Spree::CartonCapturing do
     end
 
     context "when we are trying to charge too much" do
+      let(:product) { create(:product, price: 10.00) }
+      let(:variant) { create(:variant, price: 10, product: product, track_inventory: false) }
+
       before do
+        order.contents.add(variant, 1)
+        order.contents.advance
+        create(:payment, order: order, amount: order.total)
+        order.complete!
+        order.reload
         allow_any_instance_of(Spree::UnprocessedInventoryUnitAmountCalculator).to receive(:price_total).and_return(order.total + 1)
       end
 
