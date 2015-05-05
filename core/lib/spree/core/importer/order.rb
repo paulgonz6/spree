@@ -30,9 +30,9 @@ module Spree
             order.update_totals
             order.persist_totals
             order.reload
-          rescue Exception => e
+          rescue Exception
             order.destroy if order && order.persisted?
-            raise e
+            raise
           end
         end
 
