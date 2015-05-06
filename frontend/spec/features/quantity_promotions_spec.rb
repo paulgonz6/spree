@@ -87,5 +87,44 @@ RSpec.feature "Quantity Promotions" do
       expect(page).to have_content("-$20.00")
     end
   end
+
+  context "with a group size of 3" do
+    given(:action) do
+      Spree::Promotion::Actions::CreateQuantityAdjustments.create(
+        calculator: calculator,
+        preferred_group_size: 3
+      )
+    end
+
+    background { FactoryGirl.create(:product, name: "DC-15A") }
+
+    scenario "odd number of changes to quantities" do
+      fill_in "order_line_items_attributes_0_quantity", with: 3
+      click_button "Update"
+
+      # Apply the promo code and see a $15 discount
+      fill_in "Coupon code", with: "PROMO"
+      click_button "Update"
+      expect(page).to have_content("The coupon code was successfully applied to your order")
+      within("#cart_adjustments") do
+        expect(page).to have_content("-$15.00")
+      end
+
+      # Add two different products to our cart
+      visit spree.root_path
+      click_link "E-11"
+      click_button "Add To Cart"
+      within("#cart_adjustments") do
+        expect(page).to have_content("-$15.00")
+      end
+
+      # Reduce quantity of first item to 2
+      fill_in "order_line_items_attributes_0_quantity", with: 2
+      click_button "Update"
+      within("#cart_adjustments") do
+        expect(page).to have_content("-$15.00")
+      end
+    end
+  end
 end
 
