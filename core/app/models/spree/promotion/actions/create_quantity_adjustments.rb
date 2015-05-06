@@ -4,7 +4,7 @@ module Spree::Promotion::Actions
 
     preference :group_size, :integer, default: 1
 
-    has_many :line_item_actions, foreign_key: :action_id
+    has_many :line_item_actions, foreign_key: :action_id, dependent: :destroy
     has_many :line_items, through: :line_item_actions
 
     ##
@@ -99,11 +99,11 @@ module Spree::Promotion::Actions
     end
 
     def persist_quantity(quantity, line_item)
-      line_item_actions.where(
+      line_item_action = line_item_actions.where(
         line_item_id: line_item.id
-      ).first_or_create! do |line_item_action|
-        line_item_action.quantity = quantity
-      end
+      ).first_or_initialize
+      line_item_action.quantity = quantity
+      line_item_action.save!
     end
 
     ##
