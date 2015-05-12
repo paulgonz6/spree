@@ -1,21 +1,36 @@
 module Spree
   class StockTransfer < ActiveRecord::Base
+    class CannotModifyClosedStockTransfer < StandardError; end
+
     has_many :stock_movements, :as => :originator
     has_many :transfer_items
 
-    belongs_to :created_by, :class_name => 'Spree::User'
-    belongs_to :closed_by, :class_name => 'Spree::User'
+    belongs_to :created_by, :class_name => Spree.user_class.to_s
+    belongs_to :finalized_by, :class_name => Spree.user_class.to_s
+    belongs_to :closed_by, :class_name => Spree.user_class.to_s
     belongs_to :source_location, :class_name => 'Spree::StockLocation'
     belongs_to :destination_location, :class_name => 'Spree::StockLocation'
 
     make_permalink field: :number, prefix: 'T'
 
+    def to_param
+      number
+    end
+
+    def finalized?
+      finalized_at.present?
+    end
+
     def closed?
       closed_at.present?
     end
 
-    def to_param
-      number
+    def shipped?
+      shipped_at.present?
+    end
+
+    def receivable?
+      finalized? && shipped? && !closed?
     end
 
     def ship(tracking_number: tracking_number, shipped_at: shipped_at)
