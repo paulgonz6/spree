@@ -48,6 +48,8 @@
   }.to_json
 %>
 </script>
+<script data-hook='admin-custom-translations'>
+</script>
 
 <% if I18n.locale != :en %>
   <%= javascript_include_tag "select2_locale_#{I18n.locale}" %>
