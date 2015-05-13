@@ -66,8 +66,12 @@ module Spree
               variants = variants.active
             end
           end
-          variants = variants.in_stock if params[:in_stock_only]
+          variants = variants.in_stock if show_in_stock_only?
           variants
+        end
+
+        def show_in_stock_only?
+          params[:in_stock_only]
         end
 
         def variant_params
