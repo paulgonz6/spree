@@ -50,21 +50,83 @@ describe Spree::BaseHelper do
 
   # Regression test for #1436
   context "defining custom image helpers" do
-    let(:product) { mock_model(Spree::Product, :images => [], :variant_images => []) }
+    let(:product_image_url) { "http://www.example.com/product" }
+    let(:variant_image_url) { "http://www.example.com/variant" }
+    let(:product_image) { mock_model(Spree::Image, attachment: double(url: product_image_url)) }
+    let(:variant_image) { mock_model(Spree::Image, attachment: double(url: variant_image_url)) }
+
     before do
       Spree::Image.class_eval do
         attachment_definitions[:attachment][:styles].merge!({:very_strange => '1x1'})
       end
     end
 
-    it "should not raise errors when style exists" do
-      expect { very_strange_image(product) }.not_to raise_error
+    context "resource is a product" do
+      let(:product_images) { [] }
+      let(:variant_images) { [] }
+      let(:product) { mock_model(Spree::Product, images: product_images , variant_images: variant_images) }
+
+      it "should not raise errors when style exists" do
+        expect { very_strange_image(product) }.not_to raise_error
+      end
+
+      it "should raise NoMethodError when style is not exists" do
+        expect { another_strange_image(product) }.to raise_error(NoMethodError)
+      end
+
+      context "has no images" do
+        it "returns a no image found image" do
+          expect(very_strange_image(product)).to match /noimage/
+        end
+      end
+
+      context "has product images" do
+        let(:product_images) { [product_image] }
+        let(:variant_images) { [variant_image] }
+
+        it "uses one of the product's images" do
+          expect(very_strange_image(product)).to match /#{product_image_url}/
+        end
+      end
+
+      context "only variants have images" do
+        let(:product_images) { [] }
+        let(:variant_images) { [variant_image] }
+
+        it "uses one of the variant's images" do
+          expect(very_strange_image(product)).to match /#{variant_image_url}/
+        end
+      end
     end
 
-    it "should raise NoMethodError when style is not exists" do
-      expect { another_strange_image(product) }.to raise_error(NoMethodError)
-    end
+    context "resource is a variant" do
+      let(:variant_images) { [] }
+      let(:variant) { mock_model(Spree::Variant, images: variant_images) }
 
+      it "should not raise errors when style exists" do
+        expect { very_strange_image(variant) }.not_to raise_error
+      end
+
+      it "should raise NoMethodError when style is not exists" do
+        expect { another_strange_image(variant) }.to raise_error(NoMethodError)
+      end
+
+      context "has images" do
+        let(:variant_images) { [variant_image] }
+
+        it "uses one of the variant's images" do
+          expect(very_strange_image(variant)).to match /#{variant_image_url}/
+        end
+      end
+
+      context "has no images" do
+        let(:variant_images) { [] }
+
+        it "returns a no image found image" do
+          expect(very_strange_image(variant)).to match /noimage/
+        end
+      end
+    end
   end
 
   # Regression test for #2034
