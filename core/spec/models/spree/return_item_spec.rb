@@ -58,6 +58,27 @@ describe Spree::ReturnItem do
       end
     end
 
+    context 'when the received item is actually the exchange (aka customer changed mind about exchange)' do
+      let(:exchange_inventory_unit) { create(:inventory_unit, order: order,state: 'shipped') }
+      let(:return_item_with_exchange) { create(:return_item, inventory_unit: inventory_unit, exchange_inventory_unit: exchange_inventory_unit) }
+      let(:return_item_in_lieu) { create(:return_item, inventory_unit: exchange_inventory_unit)}
+
+      it 'unexchanges original return item' do
+        ri_original = return_item_with_exchange #this has to come before receive! Not sure why but suspect test setup issues
+        ri_received = return_item_in_lieu
+
+        return_item_in_lieu.receive!
+
+        ri_original.reload
+        ri_received.reload
+        expect(ri_original.reception_status).to eq 'unexchanged'
+        expect(ri_received.reception_status).to eq 'received'
+        expect(ri_received.pre_tax_amount).to eq 0
+        expect(inventory_unit.reload.state).to eq 'shipped'
+        expect(exchange_inventory_unit.reload.state).to eq 'returned'
+      end
+    end
+
     context 'with a stock location' do
       let(:stock_item)      { inventory_unit.find_stock_item }
 

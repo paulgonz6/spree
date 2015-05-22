@@ -2,7 +2,7 @@ module Spree
   class ReturnItem < ActiveRecord::Base
 
     INTERMEDIATE_RECEPTION_STATUSES = %i(given_to_customer lost_in_transit shipped_wrong_item short_shipped in_transit)
-    COMPLETED_RECEPTION_STATUSES = INTERMEDIATE_RECEPTION_STATUSES + [:received]
+    COMPLETED_RECEPTION_STATUSES = INTERMEDIATE_RECEPTION_STATUSES + [:received, :unexchanged]
 
     class_attribute :return_eligibility_validator
     self.return_eligibility_validator = ReturnItem::EligibilityValidator::DefaultEligibilityValidator
@@ -63,11 +63,13 @@ module Spree
 
     state_machine :reception_status, initial: :awaiting do
       after_transition to: COMPLETED_RECEPTION_STATUSES,  do: :attempt_accept
+      after_transition to: COMPLETED_RECEPTION_STATUSES,  do: :check_unexchange
       after_transition to: :received, do: :process_inventory_unit!
 
       event(:cancel) { transition to: :cancelled, from: :awaiting }
 
       event(:receive) { transition to: :received, from: INTERMEDIATE_RECEPTION_STATUSES + [:awaiting] }
+      event(:unexchange) { transition to: :unexchanged, from: [:awaiting] }
       event(:give) { transition to: :given_to_customer, from: :awaiting }
       event(:lost) { transition to: :lost_in_transit, from: :awaiting }
       event(:wrong_item_shipped) { transition to: :shipped_wrong_item, from: :awaiting }
@@ -186,6 +188,14 @@ module Spree
 
       Spree::StockMovement.create!(stock_item_id: stock_item.id, quantity: 1) if should_restock?
       customer_return.process_return! if customer_return
+    end
+
+    def check_unexchange
+      if unexchanged_sibling = self.class.awaiting_return.find_by(exchange_inventory_unit: inventory_unit)
+        # This happens when we ship an exchange to a customer, but the customer keeps the original and returns the exchange
+        unexchanged_sibling.unexchange!
+        update_attributes(pre_tax_amount: 0)
+      end
     end
 
     # This logic is also present in the customer return. The reason for the
