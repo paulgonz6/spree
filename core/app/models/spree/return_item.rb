@@ -164,6 +164,11 @@ module Spree
       status_paths.map{ |s| s.to_s.humanize }.zip(event_paths)
     end
 
+    def sibling_intended_for_exchange
+      # This happens when we ship an exchange to a customer, but the customer keeps the original and returns the exchange
+      self.class.awaiting_return.find_by(exchange_inventory_unit: inventory_unit)
+    end
+
     private
 
     def persist_acceptance_status_errors
@@ -191,11 +196,7 @@ module Spree
     end
 
     def check_unexchange
-      if unexchanged_sibling = self.class.awaiting_return.find_by(exchange_inventory_unit: inventory_unit)
-        # This happens when we ship an exchange to a customer, but the customer keeps the original and returns the exchange
-        unexchanged_sibling.unexchange!
-        update_attributes(pre_tax_amount: 0)
-      end
+      sibling_intended_for_exchange.try(:unexchange!)
     end
 
     # This logic is also present in the customer return. The reason for the
