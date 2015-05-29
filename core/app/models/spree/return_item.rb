@@ -164,9 +164,8 @@ module Spree
       status_paths.map{ |s| s.to_s.humanize }.zip(event_paths)
     end
 
-    def sibling_intended_for_exchange
-      # This happens when we ship an exchange to a customer, but the customer keeps the original and returns the exchange
-      self.class.awaiting_return.find_by(exchange_inventory_unit: inventory_unit)
+    def sibling_unexchanged?
+      sibling_intended_for_exchange('unexchanged')
     end
 
     private
@@ -195,8 +194,18 @@ module Spree
       customer_return.process_return! if customer_return
     end
 
+    def sibling_intended_for_exchange(status)
+      # This happens when we ship an exchange to a customer, but the customer keeps the original and returns the exchange
+      self.class.find_by(reception_status: status, exchange_inventory_unit: inventory_unit)
+    end
+
     def check_unexchange
-      sibling_intended_for_exchange.try(:unexchange!)
+      original_ri = sibling_intended_for_exchange('awaiting')
+      if original_ri
+        original_ri.unexchange!
+        set_default_pre_tax_amount
+        save!
+      end
     end
 
     # This logic is also present in the customer return. The reason for the
